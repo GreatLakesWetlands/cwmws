@@ -1,3 +1,5 @@
+/*
+
 html,body,#mapDiv,.map.container{
     padding:0;
     margin:0;
@@ -11,13 +13,19 @@ html,body,#mapDiv,.map.container{
     top:10px;
     right:20px;
     }
-/*
+*/
 
 html, body {
   height: 97%;
   width: 98%;
   margin: 1%;
 }
+
+#mapDiv {
+    padding:0;
+    margin:0;
+    height:100%;
+    }
 
 #rightPane {
   width: 20%;
@@ -26,4 +34,3 @@ html, body {
 #legendPane {
   border: solid #97DCF2 1px;
 }
-*/

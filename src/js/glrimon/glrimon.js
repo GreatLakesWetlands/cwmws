@@ -5,22 +5,23 @@ map = {};
 
 layer_url = "http://umd-cla-gis01.d.umn.edu:6080/arcgis/rest/services/NRRI/glritest000/MapServer";
 
-require(["esri/map", "esri/layers/FeatureLayer", "esri/dijit/Legend", "dojo/_base/array", "dojo/parser", "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/layout/AccordionContainer", "dojo/domReady!"], function(Map, FeatureLayer, Legend, arrayUtils, parser) {
-  var rivers, waterbodies;
+require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/dijit/Legend', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, Legend, arrayUtils, parser, BasemapGallery, arcgisUtils) {
+  var basemapGallery, rivers;
   parser.parse();
   map = new Map("map", {
     basemap: "topo",
-    center: [-96.53, 38.374],
-    zoom: 13
+    center: [-90, 44],
+    zoom: 6
   });
-  rivers = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Hydrography/Watershed173811/MapServer/1", {
-    mode: FeatureLayer.MODE_ONDEMAND,
+  rivers = new ArcGISDynamicMapServiceLayer(layer_url, {
+    mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
     outFields: ["*"]
   });
-  waterbodies = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Hydrography/Watershed173811/MapServer/0", {
-    mode: FeatureLayer.MODE_ONDEMAND,
-    outFields: ["*"]
-  });
+  basemapGallery = new BasemapGallery({
+    showArcGISBasemaps: true,
+    map: map
+  }, "basemapGallery");
+  basemapGallery.startup();
   map.on("layers-add-result", function(evt) {
     var layerInfo, legendDijit;
     layerInfo = arrayUtils.map(evt.layers, function(layer, index) {
@@ -37,5 +38,5 @@ require(["esri/map", "esri/layers/FeatureLayer", "esri/dijit/Legend", "dojo/_bas
     }
     return legendDijit.startup();
   });
-  return map.addLayers([waterbodies, rivers]);
+  return map.addLayers([rivers]);
 });

@@ -4,17 +4,57 @@ map = {}
 
 layer_url = "http://umd-cla-gis01.d.umn.edu:6080/arcgis/rest/services/NRRI/glritest000/MapServer"
 
+querySites = (e) ->
+    # build an extent around the click point
+    pad = map.extent.getWidth() / map.width * 5
+    queryGeom = new esri.geometry.Extent e.mapPoint.x - pad, e.mapPoint.y - pad,
+        e.mapPoint.x + pad, e.mapPoint.y + pad,
+        map.spatialReference
+    console.log map.spatialReference
+    q = new esri.tasks.Query()
+    q.outSpatialReference = {"wkid": 102100} # map.spatialReference # {"wkid": 4326}
+    q.returnGeometry = true
+    q.outFields = ["site", "name", "geomorph"] # ["NAME", "STATE_FIPS", "CNTY_FIPS"]
+    q.geometry = queryGeom
+
+    popupTemplate = new esri.dijit.PopupTemplate
+        title: "{site}"
+        fieldInfos: [
+            { fieldName: "site", visible: true, label: "site: " },
+            { fieldName: "name", visible: true, label: "name: " },
+            { fieldName: "geomorph", visible: true, label: "geomorph: " },
+            # { fieldName: "CNTY_FIPS", visible: true, label: "County FIPS: " },
+            # { fieldName: "STATE_FIPS", visible: true, label: "State FIPS: " }
+        ]
+
+    qt = new esri.tasks.QueryTask layer_url + '/0'
+    console.log ['q', q]
+    def = qt.execute q
+    def.addCallback (result) ->
+        console.log ['result', result]
+        dojo.map result.features, (f) ->
+            console.log ['f', f]
+            f.setInfoTemplate popupTemplate
+            return f
+
+    map.infoWindow.setFeatures [def]
+    # show the popup
+    map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
+
+
 require [
     'esri/map',
     'esri/layers/ArcGISDynamicMapServiceLayer',
+    "esri/layers/WMSLayer", 
+    'esri/layers/FeatureLayer',
     'esri/dijit/Legend',
+    'esri/tasks/query',
     'dojo/_base/array',
     'dojo/parser',
     'esri/dijit/BasemapGallery',
     'esri/arcgis/utils',
     'esri/dijit/Popup',
     'esri/dijit/PopupTemplate',
-    'esri/layers/FeatureLayer',
     'dojo/dom-class',
     'dojo/dom-construct',
     'dojo/on',
@@ -28,14 +68,16 @@ require [
 ], (
     Map,
     ArcGISDynamicMapServiceLayer,
+    WMSLayer,
+    FeatureLayer,
     Legend,
+    query,
     arrayUtils,
     parser,
     BasemapGallery,
     arcgisUtils,
     Popup,
     PopupTemplate,
-    FeatureLayer,
     domClass,
     domConstruct,
     On,
@@ -98,3 +140,4 @@ require [
 
     map.addLayers [rivers]
 
+    dojo.connect map, 'onClick', querySites

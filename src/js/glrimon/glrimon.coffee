@@ -1,10 +1,12 @@
-# coffee -bcw js/glrimon/glrimon.coffee &
+# /usr/bin/coffee -cw js/glrimon/glrimon.coffee &
 
 map = {}
 
-layer_url = "http://umd-cla-gis01.d.umn.edu:6080/arcgis/rest/services/NRRI/glritest000/MapServer"
+layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest000/MapServer"
 
 querySites = (e) ->
+    ### query server for sites near mouseclick ###
+    
     # build an extent around the click point
     pad = map.extent.getWidth() / map.width * 5
     queryGeom = new esri.geometry.Extent e.mapPoint.x - pad, e.mapPoint.y - pad,
@@ -49,6 +51,11 @@ require [
     'esri/layers/FeatureLayer',
     'esri/dijit/Legend',
     'esri/tasks/query',
+    "esri/layers/LayerDrawingOptions", 
+    "esri/renderers/SimpleRenderer",
+    "esri/symbols/SimpleMarkerSymbol",
+    "esri/symbols/SimpleLineSymbol", 
+    "dojo/_base/Color",
     'dojo/_base/array',
     'dojo/parser',
     'esri/dijit/BasemapGallery',
@@ -72,6 +79,11 @@ require [
     FeatureLayer,
     Legend,
     query,
+    LayerDrawingOptions,
+    SimpleRenderer,
+    SimpleMarkerSymbol,
+    SimpleLineSymbol,
+    Color,
     arrayUtils,
     parser,
     BasemapGallery,
@@ -86,15 +98,18 @@ require [
 ) ->
     parser.parse()
     
-    popup = Popup
+    popup = new Popup
         titleInBody: false, 
         domConstruct.create "div"
     
     map = new Map "map",
-        basemap:"topo",
-        center: [-90, 44],
+        slider: true
+        sliderStyle: "large"
+        basemap:"topo"
+        center: [-84, 45]
         zoom: 6
         infoWindow: popup
+        minScale: 10000000
         
     domClass.add map.infoWindow.domNode, "myTheme"
     
@@ -110,13 +125,25 @@ require [
           ,
             fieldName: "Number_Fin",
             label: "Finishers"
-          ]
-          mediaInfos: []
+        ]
+        mediaInfos: []
  
     rivers = new ArcGISDynamicMapServiceLayer layer_url,
         mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
         outFields: ["*"]
         infoTemplate:template
+
+    star = new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
+        new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+            new Color([255,0,0]), 2,
+        new Color([0,255,0,0.25])
+    
+    renderer = new SimpleRenderer(star)
+    drawing_options = new LayerDrawingOptions()
+    drawing_options.renderer = renderer
+    opts = []
+    opts[0] = drawing_options  # would be not zero if not sub layer 0
+    rivers.setLayerDrawingOptions(opts)
         
     basemapGallery = new BasemapGallery
         showArcGISBasemaps: true
@@ -130,13 +157,9 @@ require [
             layer:layer.layer
             title:layer.layer.name
             
-    
         if layerInfo.length > 0
-            legendDijit = new Legend
-                map: map,
-                layerInfos: layerInfo
-              , "legendDiv"
-            legendDijit.startup();
+            legendDijit = new Legend {map: map, layerInfos: layerInfo}, "legendDiv"
+            legendDijit.startup()
 
     map.addLayers [rivers]
 

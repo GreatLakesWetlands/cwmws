@@ -1,17 +1,20 @@
-html, body {
+html, body, #map {
   height: 100%;
   width: 100%;
-  /* margin: 1%; */
   }
+/* 
 #map {
   height: 95%;
-  width: 75%;
+  width: 79%;
   }
+*/
 
 #rightPane {
   width: 20%;
   }
+
 /*
+
 #legendPane {
   border: solid #97DCF2 1px;
   }

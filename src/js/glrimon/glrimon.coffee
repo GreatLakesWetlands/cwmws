@@ -2,7 +2,7 @@
 
 map = {}
 
-layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest000/MapServer"
+layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest001/MapServer"
 
 querySites = (e) ->
     ### query server for sites near mouseclick ###
@@ -14,9 +14,9 @@ querySites = (e) ->
         map.spatialReference
     console.log map.spatialReference
     q = new esri.tasks.Query()
-    q.outSpatialReference = {"wkid": 102100} # map.spatialReference # {"wkid": 4326}
+    q.outSpatialReference = {"wkid": map.spatialReference} # 102100 # {"wkid": 4326}
     q.returnGeometry = true
-    q.outFields = ["site", "name", "geomorph"] # ["NAME", "STATE_FIPS", "CNTY_FIPS"]
+    q.outFields = ["site", "name", "geomorph", 'lon']
     q.geometry = queryGeom
 
     popupTemplate = new esri.dijit.PopupTemplate
@@ -25,8 +25,7 @@ querySites = (e) ->
             { fieldName: "site", visible: true, label: "site: " },
             { fieldName: "name", visible: true, label: "name: " },
             { fieldName: "geomorph", visible: true, label: "geomorph: " },
-            # { fieldName: "CNTY_FIPS", visible: true, label: "County FIPS: " },
-            # { fieldName: "STATE_FIPS", visible: true, label: "State FIPS: " }
+            { fieldName: "lon", visible: true, label: "lon: " },
         ]
 
     qt = new esri.tasks.QueryTask layer_url + '/0'
@@ -53,6 +52,8 @@ require [
     'esri/tasks/query',
     "esri/layers/LayerDrawingOptions", 
     "esri/renderers/SimpleRenderer",
+    "esri/renderers/UniqueValueRenderer",
+    "esri/renderers/ClassBreaksRenderer",
     "esri/symbols/SimpleMarkerSymbol",
     "esri/symbols/SimpleLineSymbol", 
     "dojo/_base/Color",
@@ -81,6 +82,8 @@ require [
     query,
     LayerDrawingOptions,
     SimpleRenderer,
+    UniqueValueRenderer,
+    ClassBreaksRenderer,
     SimpleMarkerSymbol,
     SimpleLineSymbol,
     Color,
@@ -113,32 +116,71 @@ require [
         
     domClass.add map.infoWindow.domNode, "myTheme"
     
-    template = new PopupTemplate
-        title: "Boston Marathon 2013"
-        description: "{Percent_Fi} of starters from {STATE_NAME} finished"
-        fieldInfos: [
-            fieldName: "Number_Ent",
-            label: "Entrants"
-          ,
-            fieldName: "Number_Sta",
-            label: "Starters"
-          ,
-            fieldName: "Number_Fin",
-            label: "Finishers"
-        ]
-        mediaInfos: []
- 
     rivers = new ArcGISDynamicMapServiceLayer layer_url,
         mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
         outFields: ["*"]
-        infoTemplate:template
 
-    star = new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
+    star = new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_SQUARE, 8,
         new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
             new Color([255,0,0]), 2,
         new Color([0,255,0,0.25])
     
-    renderer = new SimpleRenderer(star)
+    renderer = new ClassBreaksRenderer star, 'logn'
+    colors = [
+        [255,0,0],
+        [255,128,0],
+        [128,128,0],
+        [0,128,128],
+        [0,0,255],
+    ]
+    range = [-92, -74]
+    steps = colors.length
+    step = (range[1] - range[0]) / steps
+    for i in [0..steps-1]
+        if i == 0
+            start = -Infinity
+            stop = range[0]+(i+1)*step
+        else if i == steps - 1
+            start = range[0]+i*step
+            stop = +Infinity
+        else
+            start = range[0]+i*step
+            stop = range[0]+(i+1)*step
+        
+        renderer.addBreak start, stop, # star,
+            new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
+                new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+                    new Color([255,0,0]), 2,
+                new Color(colors[i])
+                
+        console.log start, stop, colors[i]
+        
+    renderer = new UniqueValueRenderer star, 'geomorph'
+    
+    things =[
+        value: 'riverine'
+        color: [0,255,0]
+      ,
+        value: 'barrier (protected)'
+        color: [255,0,0]
+      ,
+        value: 'lacustrine (coastal)'
+        color: [0,0,255]
+    ]
+    
+    for thing in things                
+        renderer.addValue 
+            value: thing.value
+            symbol:
+                new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
+                    new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+                        new Color(thing.color), 2,
+                    new Color([255,128,128])
+            label: thing.value
+            description: thing.value
+    
+    # renderer = new SimpleRenderer star
+    
     drawing_options = new LayerDrawingOptions()
     drawing_options.renderer = renderer
     opts = []
@@ -157,8 +199,13 @@ require [
             layer:layer.layer
             title:layer.layer.name
             
+            
         if layerInfo.length > 0
-            legendDijit = new Legend {map: map, layerInfos: layerInfo}, "legendDiv"
+            legendDijit = new Legend 
+                map: map
+                layerInfos: layerInfo
+              ,
+                "legendDiv"
             legendDijit.startup()
 
     map.addLayers [rivers]

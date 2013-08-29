@@ -58,10 +58,125 @@
     return map.infoWindow.show(e.screenPoint, map.getInfoWindowAnchor(e.screenPoint));
   };
 
-  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Button', 'dijit/form/Textarea', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, domClass, domConstruct, On, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, number, dom, JSON, registry) {
-    var basemapGallery, colors, drawing_options, i, opts, popup, range, renderer, rivers, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
+  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Button', 'dijit/form/Textarea', 'dojo/query', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, domClass, domConstruct, On, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, number, dom, JSON, registry) {
+    var basemapGallery, colors, drawing_options, i, locate, locator, opts, popup, range, renderer, rivers, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
     parser.parse();
+    locator = new Locator("http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
+    locate = function() {
+      var address, options;
+      console.log('locating');
+      address = {
+        SingleLine: dom.byId("address").value
+      };
+      options = {
+        address: address,
+        outFields: ["*"]
+      };
+      return locator.addressToLocations(options);
+    };
+    /* click the Find button
+    */
+
     registry.byId("locate").on("click", locate);
+    registry.byId("address").on("keyup", function(evt) {
+      if (evt.keyCode !== Keys.ENTER) {
+        return;
+      }
+      return locate();
+    });
+    locator.on("address-to-locations-complete", function(evt) {
+      var esriExtent, maxx, maxy, minx, miny, ptAttr;
+      console.log("address-to-locations-complete");
+      map.graphics.clear();
+      arrayUtils.forEach(evt.addresses, function(geocodeResult, index) {
+        var b, font, g, locationGraphic, pointMeters, r, symbol, textSymbol;
+        r = Math.floor(Math.random() * 250);
+        g = Math.floor(Math.random() * 100);
+        b = Math.floor(Math.random() * 100);
+        symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 20, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([r, g, b, 0.5]), 10), new Color([r, g, b, 0.9]));
+        pointMeters = webMercatorUtils.geographicToWebMercator(geocodeResult.location);
+        locationGraphic = new Graphic(pointMeters, symbol);
+        font = new Font().setSize("12pt").setWeight(Font.WEIGHT_BOLD);
+        textSymbol = new TextSymbol((index + 1) + ".) " + geocodeResult.address, font, new Color([r, g, b, 0.8])).setOffset(5, 15);
+        map.graphics.add(locationGraphic);
+        return map.graphics.add(new Graphic(pointMeters, textSymbol));
+      });
+      ptAttr = evt.addresses[0].attributes;
+      minx = parseFloat(ptAttr.Xmin);
+      maxx = parseFloat(ptAttr.Xmax);
+      miny = parseFloat(ptAttr.Ymin);
+      maxy = parseFloat(ptAttr.Ymax);
+      esriExtent = new Extent(minx, miny, maxx, maxy, new SpatialReference({
+        wkid: 4326
+      }));
+      return map.setExtent(webMercatorUtils.geographicToWebMercator(esriExtent));
+    });
+    /*
+    
+        map.on("extent-change", updateExtent);
+    
+        function updateExtent() {
+          dom.byId("currentextent").innerHTML = "<b>Current Extent JSON:</b> " + JSON.stringify(map.extent.toJson());
+          dom.byId("currentextent").innerHTML += "<br/><b>Current Zoom level:</b> " + map.getLevel();
+        }
+    
+        function showResults(results) {
+          var rdiv = dom.byId("resultsdiv");
+          rdiv.innerHTML = "<p><b>Results : " + results.length + "</b></p>";
+          
+          var content = [];
+          arrayUtils.forEach(results, function(result, index) {             
+            var x = result.location.x.toFixed(5);
+            var y = result.location.y.toFixed(5);
+            content.push("<fieldset>");
+            content.push("<legend><b>" + (index + 1) + ". " + result.address + "</b></legend>");
+            content.push("<i>Score:</i> " + result.score);
+            content.push("<br/>");
+            content.push("<i>Address Found In</i> : " + result.address);
+            content.push("<br/><br/>");
+            content.push("Latitude (y): " + y);
+            content.push("  ");
+            content.push("Longitude (x): " + x);
+            content.push("<br/><br/>");
+            content.push("<b>GeoRSS-Simple</b><br/>");
+            content.push("<georss:point>" + y + " " + x + "</georss:point>");
+            content.push("<br/><br/>");
+            content.push("<b>GeoRSS-GML</b><br/>");
+            content.push("<georss:where><gml:Point><gml:pos>" + y + " " + x + "</gml:pos><gml:Point></georss:where>");
+            content.push("<br/><br/>");
+            content.push("<b>Esri JSON</b><br/>");
+            content.push("<b>WGS:</b> " + JSON.stringify(result.location.toJson()));
+            content.push("<br/>");
+            
+            var location_wm = webMercatorUtils.geographicToWebMercator(result.location);
+            
+            content.push("<b>WM:</b> " + JSON.stringify(location_wm.toJson()));
+            content.push("<br/><br/>");
+            content.push("<b>Geo JSON</b><br/>");
+            content.push('"geometry": {"type": "Point", "coordinates": [' + y + ',' + x + ']}');
+            content.push("<br/><br/>");
+            content.push("<input type='button' value='Center At Address' onclick='zoomTo(" + y + "," + x + ")'/>");
+            content.push("</fieldset>");
+          });
+          rdiv.innerHTML += content.join("");
+        }
+    */
+
+    /*
+      
+      function zoomTo(lat, lon) {
+        require([
+          "esri/geometry/Point", "esri/geometry/webMercatorUtils"
+        ], function(Point, webMercatorUtils) {
+          var point = new Point(lon, lat, {
+            wkid: "4326"
+          });
+          var wmpoint = webMercatorUtils.geographicToWebMercator(point);
+          map.centerAt(wmpoint);
+        });
+      }
+    */
+
     popup = new Popup({
       titleInBody: false
     }, domConstruct.create("div"));

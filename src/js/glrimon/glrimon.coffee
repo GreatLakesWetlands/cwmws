@@ -39,7 +39,7 @@ querySites = (e) ->
     map.infoWindow.setFeatures [def]
     # show the popup
     map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
-### module loading and references ###
+### main #######################################################################
 require [
     'esri/map',
     'esri/layers/ArcGISDynamicMapServiceLayer',
@@ -53,6 +53,7 @@ require [
     'esri/renderers/ClassBreaksRenderer',
     'esri/symbols/SimpleMarkerSymbol',
     'esri/symbols/SimpleLineSymbol',
+    "esri/toolbars/draw",
     'dojo/_base/Color',
     'dojo/_base/array',
     'dojo/parser',
@@ -99,6 +100,7 @@ require [
     ClassBreaksRenderer,
     SimpleMarkerSymbol,
     SimpleLineSymbol,
+    Draw,
     Color,
     arrayUtils,
     parser,
@@ -126,8 +128,22 @@ require [
     registry
 ) ->
     
-    ### set up dojo dijit widgets ###
-    parser.parse() 
+    select = (shape) ->
+        
+        tb = new Draw map
+        tb.on "draw-end", (evt) ->
+            tb.deactivate()
+            map.enableMapNavigation()
+            console.log evt
+        map.disableMapNavigation()
+        
+        esri.bundle.toolbars.draw.addShape = "Click and drag from corner to corner"
+        
+        tb.activate esri.toolbars.Draw.RECTANGLE
+        
+    ### setup misc #################################################################
+
+    parser.parse()  
 
     popup = new Popup
         titleInBody: false, 
@@ -137,6 +153,9 @@ require [
         new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
             new Color([255,0,0]), 2,
         new Color([0,255,0,0.25])
+
+    ### create map #################################################################
+
     map = new Map "map",
         slider: true
         sliderStyle: "large"
@@ -145,6 +164,9 @@ require [
         zoom: 6
         infoWindow: popup
         minScale: 10000000
+
+    ### legend #####################################################################
+
     map.on "layers-add-result", (evt) ->
         layerInfo = arrayUtils.map evt.layers, (layer, index) ->
             layer:layer.layer
@@ -157,12 +179,18 @@ require [
               ,
                 "legendDiv"
             legendDijit.startup()
+
+    ### BasemapGallery #############################################################
+
     basemapGallery = new BasemapGallery
         showArcGISBasemaps: true
         map: map, 
         "basemapGallery"
         
     basemapGallery.startup()
+
+    ### find address ###############################################################
+
     locator = new Locator         "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
 
     locate = ->
@@ -216,6 +244,9 @@ require [
         map.setExtent webMercatorUtils.geographicToWebMercator esriExtent 
 
         # showResults(evt.addresses);
+
+    ### ClassBreaksRenderer ########################################################
+
     renderer = new ClassBreaksRenderer star, 'lon'
     colors = [
         [255,0,0],
@@ -246,7 +277,13 @@ require [
                 new Color(colors[i])
                 
         console.log start, stop, colors[i]
+
+    ### SimpleRenderer #############################################################
+
     renderer = new SimpleRenderer star
+
+    ### UniqueValueRenderer ########################################################
+
     renderer = new UniqueValueRenderer star, 'geomorph'
 
     things =[
@@ -270,6 +307,9 @@ require [
                     new Color([255,128,128])
             label: thing.value
             description: thing.value
+
+    ### load sites layer ###########################################################
+
     sites = new ArcGISDynamicMapServiceLayer layer_url,
     mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
     outFields: ["*"]
@@ -281,5 +321,10 @@ require [
     sites.setLayerDrawingOptions(opts)
             
     map.addLayers [sites]
+
+    ### connect signals ############################################################
+
     dojo.connect map, 'onClick', querySites
+
+    registry.byId("select-rect").on "click", -> select('rectangle')
 

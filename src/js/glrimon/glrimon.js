@@ -58,20 +58,35 @@
     return map.infoWindow.show(e.screenPoint, map.getInfoWindowAnchor(e.screenPoint));
   };
 
-  /* module loading and references
+  /* main
   */
 
 
-  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Button', 'dijit/form/Textarea', 'dojo/query', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, domClass, domConstruct, On, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, number, dom, JSON, registry) {
-    /* set up dojo dijit widgets
+  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', "esri/toolbars/draw", 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Button', 'dijit/form/Textarea', 'dojo/query', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, Draw, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, domClass, domConstruct, On, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, number, dom, JSON, registry) {
+    var basemapGallery, colors, drawing_options, i, locate, locator, opts, popup, range, renderer, select, sites, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
+    select = function(shape) {
+      var tb;
+      tb = new Draw(map);
+      tb.on("draw-end", function(evt) {
+        tb.deactivate();
+        map.enableMapNavigation();
+        return console.log(evt);
+      });
+      map.disableMapNavigation();
+      esri.bundle.toolbars.draw.addShape = "Click and drag from corner to corner";
+      return tb.activate(esri.toolbars.Draw.RECTANGLE);
+    };
+    /* setup misc
     */
 
-    var basemapGallery, colors, drawing_options, i, locate, locator, opts, popup, range, renderer, sites, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
     parser.parse();
     popup = new Popup({
       titleInBody: false
     }, domConstruct.create("div"));
     star = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_SQUARE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color([0, 255, 0, 0.25]));
+    /* create map
+    */
+
     map = new Map("map", {
       slider: true,
       sliderStyle: "large",
@@ -81,6 +96,9 @@
       infoWindow: popup,
       minScale: 10000000
     });
+    /* legend
+    */
+
     map.on("layers-add-result", function(evt) {
       var layerInfo, legendDijit;
       layerInfo = arrayUtils.map(evt.layers, function(layer, index) {
@@ -97,11 +115,17 @@
         return legendDijit.startup();
       }
     });
+    /* BasemapGallery
+    */
+
     basemapGallery = new BasemapGallery({
       showArcGISBasemaps: true,
       map: map
     }, "basemapGallery");
     basemapGallery.startup();
+    /* find address
+    */
+
     locator = new Locator("http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
     locate = function() {
       dom.byId('find_active').innerHTML = 'Searching, please wait';
@@ -144,6 +168,9 @@
       }));
       return map.setExtent(webMercatorUtils.geographicToWebMercator(esriExtent));
     });
+    /* ClassBreaksRenderer
+    */
+
     renderer = new ClassBreaksRenderer(star, 'lon');
     colors = [[255, 0, 0], [255, 128, 0], [128, 128, 0], [0, 128, 128], [0, 0, 255]];
     range = [-92, -74];
@@ -163,7 +190,13 @@
       renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color(colors[i])));
       console.log(start, stop, colors[i]);
     }
+    /* SimpleRenderer
+    */
+
     renderer = new SimpleRenderer(star);
+    /* UniqueValueRenderer
+    */
+
     renderer = new UniqueValueRenderer(star, 'geomorph');
     things = [
       {
@@ -186,6 +219,9 @@
         description: thing.value
       });
     }
+    /* load sites layer
+    */
+
     sites = new ArcGISDynamicMapServiceLayer(layer_url, {
       mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
       outFields: ["*"]
@@ -196,7 +232,13 @@
     opts[0] = drawing_options;
     sites.setLayerDrawingOptions(opts);
     map.addLayers([sites]);
-    return dojo.connect(map, 'onClick', querySites);
+    /* connect signals
+    */
+
+    dojo.connect(map, 'onClick', querySites);
+    return registry.byId("select-rect").on("click", function() {
+      return select('rectangle');
+    });
   });
 
 }).call(this);

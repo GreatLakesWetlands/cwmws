@@ -40,20 +40,29 @@
         data-dojo-type="dijit/layout/ContentPane"
         data-dojo-props="region:'right'">
             <div data-dojo-type="dijit/layout/AccordionContainer">
+            
                 <div data-dojo-type="dijit/layout/ContentPane"
                 id="legendPane"
                 data-dojo-props="title:'Legend', selected:true">
                     <div id="legendDiv"></div>
                 </div>
+                
                 <div data-dojo-type="dijit/layout/ContentPane"
                 data-dojo-props="title:'Tools'">
-                    <div>Find address : 
+                
+                    <div>Find address: 
                     <input data-dojo-type="dijit/form/TextBox"
                     type="text" id="address" size="20"
                     value="mackinaw bridge" />
                     <button id="locate"
                     data-dojo-type="dijit/form/Button">
                     Find</button><span id='find_active'></span></div>
+                    
+                    <div>Select: 
+                    <button id="select-rect"
+                    data-dojo-type="dijit/form/Button">
+                    Rectangle</button></div>
+                    
                 </div>
             </div>
         </div>

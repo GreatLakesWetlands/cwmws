@@ -58,9 +58,50 @@
     return map.infoWindow.show(e.screenPoint, map.getInfoWindowAnchor(e.screenPoint));
   };
 
+  /* module loading and references
+  */
+
+
   require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Button', 'dijit/form/Textarea', 'dojo/query', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, domClass, domConstruct, On, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, number, dom, JSON, registry) {
-    var basemapGallery, colors, drawing_options, i, locate, locator, opts, popup, range, renderer, rivers, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
+    /* set up dojo dijit widgets
+    */
+
+    var basemapGallery, colors, drawing_options, i, locate, locator, opts, popup, range, renderer, sites, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
     parser.parse();
+    popup = new Popup({
+      titleInBody: false
+    }, domConstruct.create("div"));
+    star = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_SQUARE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color([0, 255, 0, 0.25]));
+    map = new Map("map", {
+      slider: true,
+      sliderStyle: "large",
+      basemap: "topo",
+      center: [-84, 45],
+      zoom: 6,
+      infoWindow: popup,
+      minScale: 10000000
+    });
+    map.on("layers-add-result", function(evt) {
+      var layerInfo, legendDijit;
+      layerInfo = arrayUtils.map(evt.layers, function(layer, index) {
+        return {
+          layer: layer.layer,
+          title: layer.layer.name
+        };
+      });
+      if (layerInfo.length > 0) {
+        legendDijit = new Legend({
+          map: map,
+          layerInfos: layerInfo
+        }, "legendDiv");
+        return legendDijit.startup();
+      }
+    });
+    basemapGallery = new BasemapGallery({
+      showArcGISBasemaps: true,
+      map: map
+    }, "basemapGallery");
+    basemapGallery.startup();
     locator = new Locator("http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
     locate = function() {
       dom.byId('find_active').innerHTML = 'Searching, please wait';
@@ -103,24 +144,7 @@
       }));
       return map.setExtent(webMercatorUtils.geographicToWebMercator(esriExtent));
     });
-    popup = new Popup({
-      titleInBody: false
-    }, domConstruct.create("div"));
-    map = new Map("map", {
-      slider: true,
-      sliderStyle: "large",
-      basemap: "topo",
-      center: [-84, 45],
-      zoom: 6,
-      infoWindow: popup,
-      minScale: 10000000
-    });
-    rivers = new ArcGISDynamicMapServiceLayer(layer_url, {
-      mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
-      outFields: ["*"]
-    });
-    star = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_SQUARE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color([0, 255, 0, 0.25]));
-    renderer = new ClassBreaksRenderer(star, 'logn');
+    renderer = new ClassBreaksRenderer(star, 'lon');
     colors = [[255, 0, 0], [255, 128, 0], [128, 128, 0], [0, 128, 128], [0, 0, 255]];
     range = [-92, -74];
     steps = colors.length;
@@ -139,6 +163,7 @@
       renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color(colors[i])));
       console.log(start, stop, colors[i]);
     }
+    renderer = new SimpleRenderer(star);
     renderer = new UniqueValueRenderer(star, 'geomorph');
     things = [
       {
@@ -161,33 +186,16 @@
         description: thing.value
       });
     }
+    sites = new ArcGISDynamicMapServiceLayer(layer_url, {
+      mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
+      outFields: ["*"]
+    });
     drawing_options = new LayerDrawingOptions();
     drawing_options.renderer = renderer;
     opts = [];
     opts[0] = drawing_options;
-    rivers.setLayerDrawingOptions(opts);
-    basemapGallery = new BasemapGallery({
-      showArcGISBasemaps: true,
-      map: map
-    }, "basemapGallery");
-    basemapGallery.startup();
-    map.on("layers-add-result", function(evt) {
-      var layerInfo, legendDijit;
-      layerInfo = arrayUtils.map(evt.layers, function(layer, index) {
-        return {
-          layer: layer.layer,
-          title: layer.layer.name
-        };
-      });
-      if (layerInfo.length > 0) {
-        legendDijit = new Legend({
-          map: map,
-          layerInfos: layerInfo
-        }, "legendDiv");
-        return legendDijit.startup();
-      }
-    });
-    map.addLayers([rivers]);
+    sites.setLayerDrawingOptions(opts);
+    map.addLayers([sites]);
     return dojo.connect(map, 'onClick', querySites);
   });
 

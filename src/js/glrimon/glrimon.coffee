@@ -39,6 +39,7 @@ querySites = (e) ->
     map.infoWindow.setFeatures [def]
     # show the popup
     map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
+### module loading and references ###
 require [
     'esri/map',
     'esri/layers/ArcGISDynamicMapServiceLayer',
@@ -124,9 +125,44 @@ require [
     JSON,
     registry
 ) ->
-
-    parser.parse()
     
+    ### set up dojo dijit widgets ###
+    parser.parse() 
+
+    popup = new Popup
+        titleInBody: false, 
+        domConstruct.create "div"
+
+    star = new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_SQUARE, 8,
+        new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+            new Color([255,0,0]), 2,
+        new Color([0,255,0,0.25])
+    map = new Map "map",
+        slider: true
+        sliderStyle: "large"
+        basemap:"topo"
+        center: [-84, 45]
+        zoom: 6
+        infoWindow: popup
+        minScale: 10000000
+    map.on "layers-add-result", (evt) ->
+        layerInfo = arrayUtils.map evt.layers, (layer, index) ->
+            layer:layer.layer
+            title:layer.layer.name
+            
+        if layerInfo.length > 0
+            legendDijit = new Legend 
+                map: map
+                layerInfos: layerInfo
+              ,
+                "legendDiv"
+            legendDijit.startup()
+    basemapGallery = new BasemapGallery
+        showArcGISBasemaps: true
+        map: map, 
+        "basemapGallery"
+        
+    basemapGallery.startup()
     locator = new Locator         "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
 
     locate = ->
@@ -180,30 +216,7 @@ require [
         map.setExtent webMercatorUtils.geographicToWebMercator esriExtent 
 
         # showResults(evt.addresses);
-
-    popup = new Popup
-        titleInBody: false, 
-        domConstruct.create "div"
-    
-    map = new Map "map",
-        slider: true
-        sliderStyle: "large"
-        basemap:"topo"
-        center: [-84, 45]
-        zoom: 6
-        infoWindow: popup
-        minScale: 10000000
-        
-    rivers = new ArcGISDynamicMapServiceLayer layer_url,
-        mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
-        outFields: ["*"]
-
-    star = new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_SQUARE, 8,
-        new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-            new Color([255,0,0]), 2,
-        new Color([0,255,0,0.25])
-    
-    renderer = new ClassBreaksRenderer star, 'logn'
+    renderer = new ClassBreaksRenderer star, 'lon'
     colors = [
         [255,0,0],
         [255,128,0],
@@ -211,6 +224,7 @@ require [
         [0,128,128],
         [0,0,255],
     ]
+
     range = [-92, -74]
     steps = colors.length
     step = (range[1] - range[0]) / steps
@@ -232,9 +246,9 @@ require [
                 new Color(colors[i])
                 
         console.log start, stop, colors[i]
-        
+    renderer = new SimpleRenderer star
     renderer = new UniqueValueRenderer star, 'geomorph'
-    
+
     things =[
         value: 'riverine'
         color: [0,255,0]
@@ -245,7 +259,7 @@ require [
         value: 'lacustrine (coastal)'
         color: [0,0,255]
     ]
-    
+
     for thing in things                
         renderer.addValue 
             value: thing.value
@@ -256,37 +270,16 @@ require [
                     new Color([255,128,128])
             label: thing.value
             description: thing.value
-    
-    # renderer = new SimpleRenderer star
-    
+    sites = new ArcGISDynamicMapServiceLayer layer_url,
+    mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
+    outFields: ["*"]
+
     drawing_options = new LayerDrawingOptions()
     drawing_options.renderer = renderer
     opts = []
     opts[0] = drawing_options  # would be not zero if not sub layer 0
-    rivers.setLayerDrawingOptions(opts)
-        
-    basemapGallery = new BasemapGallery
-        showArcGISBasemaps: true
-        map: map, 
-        "basemapGallery"
-        
-    basemapGallery.startup()
-    
-    map.on "layers-add-result", (evt) ->
-        layerInfo = arrayUtils.map evt.layers, (layer, index) ->
-            layer:layer.layer
-            title:layer.layer.name
+    sites.setLayerDrawingOptions(opts)
             
-            
-        if layerInfo.length > 0
-            legendDijit = new Legend 
-                map: map
-                layerInfos: layerInfo
-              ,
-                "legendDiv"
-            legendDijit.startup()
-
-    map.addLayers [rivers]
-
+    map.addLayers [sites]
     dojo.connect map, 'onClick', querySites
 

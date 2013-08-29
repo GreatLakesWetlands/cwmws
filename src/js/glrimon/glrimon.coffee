@@ -1,9 +1,7 @@
 # /usr/bin/coffee -cw js/glrimon/glrimon.coffee &
-
 map = {}
 
 layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest001/MapServer"
-
 querySites = (e) ->
     ### query server for sites near mouseclick ###
     
@@ -41,8 +39,6 @@ querySites = (e) ->
     map.infoWindow.setFeatures [def]
     # show the popup
     map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
-
-
 require [
     'esri/map',
     'esri/layers/ArcGISDynamicMapServiceLayer',
@@ -128,139 +124,63 @@ require [
     JSON,
     registry
 ) ->
+
     parser.parse()
     
     locator = new Locator         "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
-    
+
     locate = ->
-    
-        console.log 'locating'
-    
-        address = {
-             SingleLine: dom.byId("address").value
-        }
-        options = {
-            address: address,
+        dom.byId('find_active').innerHTML = 'Searching, please wait'
+        locator.addressToLocations
+            address: SingleLine: dom.byId("address").value + ', U.S.A.'
             outFields: ["*"]
-        }
-        # optionally return the out fields if you need to calculate the extent of the geocoded point
-        locator.addressToLocations(options)
-    
-    ### click the Find button ###
+        
     registry.byId("locate").on "click", locate  
     registry.byId("address").on "keyup", (evt) ->
         if evt.keyCode != Keys.ENTER
             return
         locate()
-    
-    locator.on "address-to-locations-complete", (evt) ->
-        console.log "address-to-locations-complete"
-        map.graphics.clear()
-        arrayUtils.forEach(evt.addresses, (geocodeResult, index) ->
-            r = Math.floor(Math.random() * 250)
-            g = Math.floor(Math.random() * 100)
-            b = Math.floor(Math.random() * 100)
-          
-            symbol = new SimpleMarkerSymbol(
-              SimpleMarkerSymbol.STYLE_CIRCLE, 
-              20, 
-              new SimpleLineSymbol(
-                SimpleLineSymbol.STYLE_SOLID, 
-                new Color([r, g, b, 0.5]), 
-                10
-              ), new Color([r, g, b, 0.9]))
-            pointMeters = webMercatorUtils.geographicToWebMercator(geocodeResult.location)
-            locationGraphic = new Graphic(pointMeters, symbol)
-           
-            font = new Font().setSize("12pt").setWeight(Font.WEIGHT_BOLD)
-            textSymbol = new TextSymbol(
-              (index + 1) + ".) " + geocodeResult.address, 
-              font, 
-              new Color([r, g, b, 0.8])
-            ).setOffset(5, 15)
 
-            map.graphics.add(locationGraphic)
-            map.graphics.add(new Graphic(pointMeters, textSymbol))
-        )
+    locator.on "address-to-locations-complete", (evt) ->
+        dom.byId('find_active').innerHTML = ''
+        map.graphics.clear()
+        geocodeResult = evt.addresses[0]
+        r = Math.floor Math.random() * 250
+        g = Math.floor Math.random() * 100
+        b = Math.floor Math.random() * 100
+      
+        symbol = new SimpleMarkerSymbol(
+            SimpleMarkerSymbol.STYLE_CIRCLE, 
+            15, 
+            new SimpleLineSymbol(
+                SimpleLineSymbol.STYLE_SOLID, 
+                new Color [r, g, b, 0.5], 
+                6
+            ), new Color [r, g, b, 0.9])
+        pointMeters = webMercatorUtils.geographicToWebMercator(geocodeResult.location)
+        locationGraphic = new Graphic(pointMeters, symbol)
+       
+        font = new Font().setFamily('sans-serif').setSize("12pt").setWeight(Font.WEIGHT_BOLD)
+        textSymbol = new TextSymbol(
+          geocodeResult.address, 
+          font, 
+          new Color([r, g, b, 0.8])
+        ).setOffset(5, 15)
+
+        map.graphics.add locationGraphic
+        map.graphics.add new Graphic(pointMeters, textSymbol)
+        
         ptAttr = evt.addresses[0].attributes
-        minx = parseFloat(ptAttr.Xmin)
-        maxx = parseFloat(ptAttr.Xmax)
-        miny = parseFloat(ptAttr.Ymin)
-        maxy = parseFloat(ptAttr.Ymax)
-    
-        esriExtent = new Extent(minx, miny, maxx, maxy, new SpatialReference({wkid:4326}))
-        map.setExtent(webMercatorUtils.geographicToWebMercator(esriExtent))
+        minx = parseFloat ptAttr.Xmin
+        maxx = parseFloat ptAttr.Xmax
+        miny = parseFloat ptAttr.Ymin
+        maxy = parseFloat ptAttr.Ymax
+
+        esriExtent = new Extent minx, miny, maxx, maxy, new SpatialReference {wkid:4326}
+        map.setExtent webMercatorUtils.geographicToWebMercator esriExtent 
 
         # showResults(evt.addresses);
-    
-    
-    ###
 
-    map.on("extent-change", updateExtent);
-
-    function updateExtent() {
-      dom.byId("currentextent").innerHTML = "<b>Current Extent JSON:</b> " + JSON.stringify(map.extent.toJson());
-      dom.byId("currentextent").innerHTML += "<br/><b>Current Zoom level:</b> " + map.getLevel();
-    }
-
-    function showResults(results) {
-      var rdiv = dom.byId("resultsdiv");
-      rdiv.innerHTML = "<p><b>Results : " + results.length + "</b></p>";
-      
-      var content = [];
-      arrayUtils.forEach(results, function(result, index) {             
-        var x = result.location.x.toFixed(5);
-        var y = result.location.y.toFixed(5);
-        content.push("<fieldset>");
-        content.push("<legend><b>" + (index + 1) + ". " + result.address + "</b></legend>");
-        content.push("<i>Score:</i> " + result.score);
-        content.push("<br/>");
-        content.push("<i>Address Found In</i> : " + result.address);
-        content.push("<br/><br/>");
-        content.push("Latitude (y): " + y);
-        content.push("  ");
-        content.push("Longitude (x): " + x);
-        content.push("<br/><br/>");
-        content.push("<b>GeoRSS-Simple</b><br/>");
-        content.push("<georss:point>" + y + " " + x + "</georss:point>");
-        content.push("<br/><br/>");
-        content.push("<b>GeoRSS-GML</b><br/>");
-        content.push("<georss:where><gml:Point><gml:pos>" + y + " " + x + "</gml:pos><gml:Point></georss:where>");
-        content.push("<br/><br/>");
-        content.push("<b>Esri JSON</b><br/>");
-        content.push("<b>WGS:</b> " + JSON.stringify(result.location.toJson()));
-        content.push("<br/>");
-        
-        var location_wm = webMercatorUtils.geographicToWebMercator(result.location);
-        
-        content.push("<b>WM:</b> " + JSON.stringify(location_wm.toJson()));
-        content.push("<br/><br/>");
-        content.push("<b>Geo JSON</b><br/>");
-        content.push('"geometry": {"type": "Point", "coordinates": [' + y + ',' + x + ']}');
-        content.push("<br/><br/>");
-        content.push("<input type='button' value='Center At Address' onclick='zoomTo(" + y + "," + x + ")'/>");
-        content.push("</fieldset>");
-      });
-      rdiv.innerHTML += content.join("");
-    }
-
-    ###          
-  
-    ###
-  
-  function zoomTo(lat, lon) {
-    require([
-      "esri/geometry/Point", "esri/geometry/webMercatorUtils"
-    ], function(Point, webMercatorUtils) {
-      var point = new Point(lon, lat, {
-        wkid: "4326"
-      });
-      var wmpoint = webMercatorUtils.geographicToWebMercator(point);
-      map.centerAt(wmpoint);
-    });
-  }
-    ###
-    
     popup = new Popup
         titleInBody: false, 
         domConstruct.create "div"
@@ -274,8 +194,6 @@ require [
         infoWindow: popup
         minScale: 10000000
         
-    domClass.add map.infoWindow.domNode, "myTheme"
-    
     rivers = new ArcGISDynamicMapServiceLayer layer_url,
         mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
         outFields: ["*"]
@@ -353,7 +271,7 @@ require [
         "basemapGallery"
         
     basemapGallery.startup()
-   
+    
     map.on "layers-add-result", (evt) ->
         layerInfo = arrayUtils.map evt.layers, (layer, index) ->
             layer:layer.layer
@@ -371,3 +289,4 @@ require [
     map.addLayers [rivers]
 
     dojo.connect map, 'onClick', querySites
+

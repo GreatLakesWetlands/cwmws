@@ -10,9 +10,8 @@ querySites = (e) ->
     queryGeom = new esri.geometry.Extent e.mapPoint.x - pad, e.mapPoint.y - pad,
         e.mapPoint.x + pad, e.mapPoint.y + pad,
         map.spatialReference
-    console.log map.spatialReference
     q = new esri.tasks.Query()
-    q.outSpatialReference = {"wkid": map.spatialReference} # 102100 # {"wkid": 4326}
+    q.outSpatialReference = {"wkid": map.spatialReference}
     q.returnGeometry = true
     q.outFields = ["site", "name", "geomorph", 'lon']
     q.geometry = queryGeom
@@ -27,12 +26,10 @@ querySites = (e) ->
         ]
 
     qt = new esri.tasks.QueryTask layer_url + '/0'
-    console.log ['q', q]
     def = qt.execute q
     def.addCallback (result) ->
-        console.log ['result', result]
+
         dojo.map result.features, (f) ->
-            console.log ['f', f]
             f.setInfoTemplate popupTemplate
             return f
 
@@ -75,6 +72,7 @@ require [
     'esri/geometry/Point',
     'esri/geometry/Extent',
     'esri/geometry/webMercatorUtils',
+    "esri/layers/ImageParameters",
     'dojo/number',
     'dojo/dom',
     'dojo/json',
@@ -93,7 +91,7 @@ require [
     WMSLayer,
     FeatureLayer,
     Legend,
-    query,
+    Query,
     LayerDrawingOptions,
     SimpleRenderer,
     UniqueValueRenderer,
@@ -122,24 +120,39 @@ require [
     Point,
     Extent,
     webMercatorUtils,
+    ImageParameters,
     number,
     dom,
     JSON,
     registry
 ) ->
     
+    ### select #####################################################################
+
     select = (shape) ->
         
-        tb = new Draw map
-        tb.on "draw-end", (evt) ->
-            tb.deactivate()
+        toolbar = new Draw map
+        toolbar.on "draw-end", (evt) ->
+        
+            toolbar.deactivate()
+
+            q = new esri.tasks.Query()
+            q.outSpatialReference = "wkid": map.spatialReference
+            q.returnGeometry = true
+            q.outFields = ["site", "name", "geomorph", 'lon']
+            q.geometry = evt.geometry
+            
             map.enableMapNavigation()
-            console.log evt
+        
+            qt = new esri.tasks.QueryTask layer_url + '/0'
+            def = qt.execute q
+            def.addCallback (result) ->
+                dom.byId('select_results').innerHTML = 
+                    "#{result.features.length} features."
+            
         map.disableMapNavigation()
-        
         esri.bundle.toolbars.draw.addShape = "Click and drag from corner to corner"
-        
-        tb.activate esri.toolbars.Draw.RECTANGLE
+        toolbar.activate esri.toolbars.Draw.RECTANGLE
         
     ### setup misc #################################################################
 
@@ -310,14 +323,22 @@ require [
 
     ### load sites layer ###########################################################
 
+    ip = new ImageParameters()
+    #ip.format = "svg"
+    #ip.transparent = true
+    ip.layerIds = [0]
+    ip.layerOption = ImageParameters.LAYER_OPTION_SHOW
+
     sites = new ArcGISDynamicMapServiceLayer layer_url,
-    mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
-    outFields: ["*"]
+        mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
+        outFields: ["*"]
+        imageParameters: ip
 
     drawing_options = new LayerDrawingOptions()
     drawing_options.renderer = renderer
     opts = []
-    opts[0] = drawing_options  # would be not zero if not sub layer 0
+    opts[0] = drawing_options  
+    ### zero for sub layer zero, 1 for sublayer 1, etc. ###
     sites.setLayerDrawingOptions(opts)
             
     map.addLayers [sites]

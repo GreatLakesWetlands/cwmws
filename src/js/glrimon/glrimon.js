@@ -13,7 +13,6 @@
     var def, pad, popupTemplate, q, qt, queryGeom;
     pad = map.extent.getWidth() / map.width * 5;
     queryGeom = new esri.geometry.Extent(e.mapPoint.x - pad, e.mapPoint.y - pad, e.mapPoint.x + pad, e.mapPoint.y + pad, map.spatialReference);
-    console.log(map.spatialReference);
     q = new esri.tasks.Query();
     q.outSpatialReference = {
       "wkid": map.spatialReference
@@ -44,12 +43,9 @@
       ]
     });
     qt = new esri.tasks.QueryTask(layer_url + '/0');
-    console.log(['q', q]);
     def = qt.execute(q);
     def.addCallback(function(result) {
-      console.log(['result', result]);
       return dojo.map(result.features, function(f) {
-        console.log(['f', f]);
         f.setInfoTemplate(popupTemplate);
         return f;
       });
@@ -62,19 +58,34 @@
   */
 
 
-  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', "esri/toolbars/draw", 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Button', 'dijit/form/Textarea', 'dojo/query', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, Draw, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, domClass, domConstruct, On, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, number, dom, JSON, registry) {
-    var basemapGallery, colors, drawing_options, i, locate, locator, opts, popup, range, renderer, select, sites, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
+  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', "esri/toolbars/draw", 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', "esri/layers/ImageParameters", 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Button', 'dijit/form/Textarea', 'dojo/query', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, Query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, Draw, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, domClass, domConstruct, On, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, ImageParameters, number, dom, JSON, registry) {
+    /* select
+    */
+
+    var basemapGallery, colors, drawing_options, i, ip, locate, locator, opts, popup, range, renderer, select, sites, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
     select = function(shape) {
-      var tb;
-      tb = new Draw(map);
-      tb.on("draw-end", function(evt) {
-        tb.deactivate();
+      var toolbar;
+      toolbar = new Draw(map);
+      toolbar.on("draw-end", function(evt) {
+        var def, q, qt;
+        toolbar.deactivate();
+        q = new esri.tasks.Query();
+        q.outSpatialReference = {
+          "wkid": map.spatialReference
+        };
+        q.returnGeometry = true;
+        q.outFields = ["site", "name", "geomorph", 'lon'];
+        q.geometry = evt.geometry;
         map.enableMapNavigation();
-        return console.log(evt);
+        qt = new esri.tasks.QueryTask(layer_url + '/0');
+        def = qt.execute(q);
+        return def.addCallback(function(result) {
+          return dom.byId('select_results').innerHTML = "" + result.features.length + " features.";
+        });
       });
       map.disableMapNavigation();
       esri.bundle.toolbars.draw.addShape = "Click and drag from corner to corner";
-      return tb.activate(esri.toolbars.Draw.RECTANGLE);
+      return toolbar.activate(esri.toolbars.Draw.RECTANGLE);
     };
     /* setup misc
     */
@@ -222,14 +233,21 @@
     /* load sites layer
     */
 
+    ip = new ImageParameters();
+    ip.layerIds = [0];
+    ip.layerOption = ImageParameters.LAYER_OPTION_SHOW;
     sites = new ArcGISDynamicMapServiceLayer(layer_url, {
       mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
-      outFields: ["*"]
+      outFields: ["*"],
+      imageParameters: ip
     });
     drawing_options = new LayerDrawingOptions();
     drawing_options.renderer = renderer;
     opts = [];
     opts[0] = drawing_options;
+    /* zero for sub layer zero, 1 for sublayer 1, etc.
+    */
+
     sites.setLayerDrawingOptions(opts);
     map.addLayers([sites]);
     /* connect signals

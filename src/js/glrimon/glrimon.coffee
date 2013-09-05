@@ -345,7 +345,9 @@ require [
 
     ### connect signals ############################################################
 
-    dojo.connect map, 'onClick', querySites
+    map.on 'click', querySites
+    basemapGallery.on 'selection-change', -> 
+        registry.byId("basemap-gallery").toggle()
 
     registry.byId("select-rect").on "click", -> select('rectangle')
 

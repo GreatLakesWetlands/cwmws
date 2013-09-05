@@ -13,7 +13,7 @@ querySites = (e) ->
     q = new esri.tasks.Query()
     q.outSpatialReference = {"wkid": map.spatialReference}
     q.returnGeometry = true
-    q.outFields = ["site", "name", "geomorph", 'lon']
+    q.outFields = ["site", "name", "geomorph", 'lat', 'lon']
     q.geometry = queryGeom
 
     popupTemplate = new esri.dijit.PopupTemplate
@@ -22,6 +22,7 @@ querySites = (e) ->
             { fieldName: "site", visible: true, label: "site: " },
             { fieldName: "name", visible: true, label: "name: " },
             { fieldName: "geomorph", visible: true, label: "geomorph: " },
+            { fieldName: "lat", visible: true, label: "lat: " },
             { fieldName: "lon", visible: true, label: "lon: " },
         ]
 

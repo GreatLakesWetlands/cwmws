@@ -18,7 +18,7 @@
       "wkid": map.spatialReference
     };
     q.returnGeometry = true;
-    q.outFields = ["site", "name", "geomorph", 'lon'];
+    q.outFields = ["site", "name", "geomorph", 'lat', 'lon'];
     q.geometry = queryGeom;
     popupTemplate = new esri.dijit.PopupTemplate({
       title: "{site}",
@@ -35,6 +35,10 @@
           fieldName: "geomorph",
           visible: true,
           label: "geomorph: "
+        }, {
+          fieldName: "lat",
+          visible: true,
+          label: "lat: "
         }, {
           fieldName: "lon",
           visible: true,

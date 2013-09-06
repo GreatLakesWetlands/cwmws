@@ -26,7 +26,7 @@ querySites = (e) ->
             { fieldName: "lon", visible: true, label: "lon: " },
         ]
 
-    qt = new esri.tasks.QueryTask layer_url + '/0'
+    qt = new esri.tasks.QueryTask layer_url + '/1'
     def = qt.execute q
     def.addCallback (result) ->
 
@@ -230,9 +230,38 @@ require [
 
     locate = ->
         dom.byId('find_active').innerHTML = 'Searching, please wait'
-        locator.addressToLocations
-            address: SingleLine: dom.byId("address").value + ', U.S.A.'
-            outFields: ["*"]
+        
+        address = dom.byId("address").value
+        
+        ### if only digits, treat as a site number ###
+        non_digit = false
+        for c in address
+            if c not in '0123456789'
+                non_digit = true
+                break
+        
+        if non_digit    
+            locator.addressToLocations
+                address: SingleLine: address + ', U.S.A.'
+                outFields: ["*"]
+        else
+        
+            q = new esri.tasks.Query()
+            q.returnGeometry = true
+            q.outFields = ["site", "name", "geomorph", 'lat', 'lon']
+            q.where = "site = #{address}"
+        
+            qt = new esri.tasks.QueryTask layer_url + '/1'
+            def = qt.execute q
+            def.addCallback (result) ->
+        
+                if result.features.length > 0
+                    text = ""
+                    map.setExtent result.features[0].geometry.getExtent().expand 1.5
+                else
+                    text = "Site #{address} not found"
+                    
+                dom.byId('find_active').innerHTML = text        
         
     registry.byId("locate").on "click", locate  
     registry.byId("address").on "keyup", (evt) ->

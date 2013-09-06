@@ -42,12 +42,6 @@
             <div data-dojo-type="dijit/layout/AccordionContainer">
             
                 <div data-dojo-type="dijit/layout/ContentPane"
-                id="legendPane"
-                data-dojo-props="title:'Legend', selected:true">
-                    <div id="legendDiv"></div>
-                </div>
-                
-                <div data-dojo-type="dijit/layout/ContentPane"
                 data-dojo-props="title:'Tools'">
                 
                     <div>Find site # / address: 
@@ -58,11 +52,19 @@
                     data-dojo-type="dijit/form/Button">
                     Find</button><span id='find_active'></span></div>
                     
-                    <div>Select: 
+                    <hr/>
+                    
+                    <div>Select sites: 
                     <button id="select-rect"
                     data-dojo-type="dijit/form/Button">
                     Rectangle</button><p id='select_results'></p></div>
                     
+                </div>
+                
+                <div data-dojo-type="dijit/layout/ContentPane"
+                id="legendPane"
+                data-dojo-props="title:'Legend', selected:true">
+                    <div id="legendDiv"></div>
                 </div>
             </div>
         </div>

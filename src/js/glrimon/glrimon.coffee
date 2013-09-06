@@ -37,10 +37,6 @@ querySites = (e) ->
     map.infoWindow.setFeatures [def]
     # show the popup
     map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
-show_species = (evt) ->
-    console.log event
-    feature = map.infoWindow.getSelectedFeature()
-    console.log feature
 ### main #######################################################################
 require [
     'esri/map',
@@ -84,6 +80,7 @@ require [
     'dojo/json',
     'dijit/registry',
     'dojo/query',
+    'dijit/Dialog',
     'dijit/layout/BorderContainer',
     'dijit/layout/ContentPane',
     'dijit/layout/AccordionContainer',
@@ -132,9 +129,47 @@ require [
     dom,
     JSON,
     registry,
-    dojo_query
+    dojo_query,
+    Dialog
 ) ->
     
+    show_species = (evt) ->
+        feature = map.infoWindow.getSelectedFeature()
+        
+        site = feature.attributes.site
+
+        q = new esri.tasks.Query()
+        q.returnGeometry = true
+        q.outFields = ["site", "taxa", "name"]
+        q.where = "site = #{site}"
+
+        qt = new esri.tasks.QueryTask layer_url + '/2'
+        def = qt.execute q
+        def.addCallback (result) ->
+
+            taxa = ''
+            div = domConstruct.create "div"
+            
+            for feat in result.features
+                if feat.attributes.taxa != taxa
+                    taxa = feat.attributes.taxa
+                    h2 = domConstruct.create "h2"
+                    h2.innerHTML = taxa
+                    domConstruct.place h2, div, 'last'
+                name = domConstruct.create "div"
+                name.innerHTML = feat.attributes.name
+                domConstruct.place name, div, 'last'
+                
+            if taxa == ''
+                note = domConstruct.create "p"
+                note.innerHTML = "No species reported yet."
+                domConstruct.place note, div, 'last'
+            
+            ans = new Dialog
+                title: "Species for site #{site}"
+                content: div
+            ans.show()
+            
     ### select #####################################################################
 
     select = (shape) ->
@@ -149,14 +184,15 @@ require [
             q.returnGeometry = true
             q.outFields = ["site", "name", "geomorph", 'lon']
             q.geometry = evt.geometry
+            q.spatialRelationship = Query.SPATIAL_REL_INTERSECTS
             
             map.enableMapNavigation()
         
-            qt = new esri.tasks.QueryTask layer_url + '/0'
+            qt = new esri.tasks.QueryTask layer_url + '/1'
             def = qt.execute q
             def.addCallback (result) ->
                 dom.byId('select_results').innerHTML = 
-                    "#{result.features.length} features."
+                    "#{result.features.length} sites."
             
         map.disableMapNavigation()
         esri.bundle.toolbars.draw.addShape = "Click and drag from corner to corner"

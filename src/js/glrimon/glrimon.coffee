@@ -37,6 +37,10 @@ querySites = (e) ->
     map.infoWindow.setFeatures [def]
     # show the popup
     map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
+show_species = (evt) ->
+    console.log event
+    feature = map.infoWindow.getSelectedFeature()
+    console.log feature
 ### main #######################################################################
 require [
     'esri/map',
@@ -51,6 +55,7 @@ require [
     'esri/renderers/ClassBreaksRenderer',
     'esri/symbols/SimpleMarkerSymbol',
     'esri/symbols/SimpleLineSymbol',
+    'esri/symbols/SimpleFillSymbol',
     "esri/toolbars/draw",
     'dojo/_base/Color',
     'dojo/_base/array',
@@ -78,13 +83,13 @@ require [
     'dojo/dom',
     'dojo/json',
     'dijit/registry',
+    'dojo/query',
     'dijit/layout/BorderContainer',
     'dijit/layout/ContentPane',
     'dijit/layout/AccordionContainer',
     'dijit/TitlePane',
     'dijit/form/Button',
     'dijit/form/Textarea',
-    'dojo/query',
     'dojo/domReady!'
 ], (
     Map,
@@ -99,6 +104,7 @@ require [
     ClassBreaksRenderer,
     SimpleMarkerSymbol,
     SimpleLineSymbol,
+    SimpleFillSymbol,
     Draw,
     Color,
     arrayUtils,
@@ -109,7 +115,7 @@ require [
     PopupTemplate,
     domClass,
     domConstruct,
-    On,
+    dojo_on,
     Keys,
     Chart,
     theme,
@@ -125,7 +131,8 @@ require [
     number,
     dom,
     JSON,
-    registry
+    registry,
+    dojo_query
 ) ->
     
     ### select #####################################################################
@@ -165,8 +172,13 @@ require [
 
     star = new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_SQUARE, 8,
         new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-            new Color([255,0,0]), 2,
+            new Color([0,0,255]), 2,
         new Color([0,255,0,0.25])
+
+    perimeter = new SimpleFillSymbol SimpleFillSymbol.STYLE_NULL,
+        new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+            new Color([255,0,0]), 2
+        new Color([0,0,0])
 
     ### create map #################################################################
 
@@ -179,6 +191,15 @@ require [
         infoWindow: popup
         minScale: 10000000
 
+    link = domConstruct.create "a",
+        "class": "action" 
+        "id": "statsLink"
+        "innerHTML": "Species",
+        "href": "javascript: void(0);"
+      ,
+        dojo_query(".actionList", map.infoWindow.domNode)[0]
+
+    dojo_on link, "click", show_species
     ### legend #####################################################################
 
     map.on "layers-add-result", (evt) ->
@@ -296,6 +317,7 @@ require [
 
     renderer = new SimpleRenderer star
 
+    line_renderer = SimpleRenderer perimeter
     ### UniqueValueRenderer ########################################################
 
     renderer = new UniqueValueRenderer star, 'geomorph'
@@ -324,22 +346,27 @@ require [
 
     ### load sites layer ###########################################################
 
-    ip = new ImageParameters()
-    #ip.format = "svg"
-    #ip.transparent = true
-    ip.layerIds = [0]
-    ip.layerOption = ImageParameters.LAYER_OPTION_SHOW
+    # ip = new ImageParameters()
+    # #ip.format = "svg"
+    # #ip.transparent = true
+    # ip.layerIds = [0]
+    # ip.layerOption = ImageParameters.LAYER_OPTION_SHOW
 
     sites = new ArcGISDynamicMapServiceLayer layer_url,
         mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
         outFields: ["*"]
-        imageParameters: ip
+        # imageParameters: ip
 
     drawing_options = new LayerDrawingOptions()
     drawing_options.renderer = renderer
     opts = []
-    opts[0] = drawing_options  
     ### zero for sub layer zero, 1 for sublayer 1, etc. ###
+    opts[0] = drawing_options  
+
+    drawing_options = new LayerDrawingOptions()
+    drawing_options.renderer = line_renderer
+    opts[1] = drawing_options  
+
     sites.setLayerDrawingOptions(opts)
             
     map.addLayers [sites]

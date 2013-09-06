@@ -1,7 +1,15 @@
 # /usr/bin/coffee -cw js/glrimon/glrimon.coffee &
+
+### replace .js with .coffee for original source ###
+
+### setup ######################################################################
+
 map = {}
 
 layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest001/MapServer"
+
+### querySites #################################################################
+
 querySites = (e) ->
     ### query server for sites near mouseclick ###
     
@@ -22,8 +30,8 @@ querySites = (e) ->
             { fieldName: "site", visible: true, label: "site: " },
             { fieldName: "name", visible: true, label: "name: " },
             { fieldName: "geomorph", visible: true, label: "geomorph: " },
-            { fieldName: "lat", visible: true, label: "lat: " },
-            { fieldName: "lon", visible: true, label: "lon: " },
+            { fieldName: "lat", visible: true, label: "lat: ", format: places: 6 },
+            { fieldName: "lon", visible: true, label: "lon: ", format: places: 6 },
         ]
 
     qt = new esri.tasks.QueryTask layer_url + '/1'
@@ -37,7 +45,9 @@ querySites = (e) ->
     map.infoWindow.setFeatures [def]
     # show the popup
     map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
+
 ### main #######################################################################
+
 require [
     'esri/map',
     'esri/layers/ArcGISDynamicMapServiceLayer',
@@ -133,6 +143,8 @@ require [
     Dialog
 ) ->
     
+    ### show_species ###############################################################
+
     show_species = (evt) ->
         feature = map.infoWindow.getSelectedFeature()
         
@@ -227,6 +239,8 @@ require [
         infoWindow: popup
         minScale: 10000000
 
+    ### links from popup ###########################################################
+
     link = domConstruct.create "a",
         "class": "action" 
         "id": "statsLink"
@@ -236,6 +250,7 @@ require [
         dojo_query(".actionList", map.infoWindow.domNode)[0]
 
     dojo_on link, "click", show_species
+
     ### legend #####################################################################
 
     map.on "layers-add-result", (evt) ->
@@ -260,7 +275,7 @@ require [
         
     basemapGallery.startup()
 
-    ### find address ###############################################################
+    ### find address / site ########################################################
 
     locator = new Locator         "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
 
@@ -383,6 +398,7 @@ require [
     renderer = new SimpleRenderer star
 
     line_renderer = SimpleRenderer perimeter
+
     ### UniqueValueRenderer ########################################################
 
     renderer = new UniqueValueRenderer star, 'geomorph'
@@ -443,4 +459,5 @@ require [
         registry.byId("basemap-gallery").toggle()
 
     registry.byId("select-rect").on "click", -> select('rectangle')
+
 

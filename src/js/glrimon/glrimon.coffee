@@ -265,6 +265,7 @@ require [
               ,
                 "legendDiv"
             legendDijit.startup()
+            map.legend = legendDijit
 
     ### BasemapGallery #############################################################
 
@@ -460,4 +461,8 @@ require [
 
     registry.byId("select-rect").on "click", -> select('rectangle')
 
+    ### sometimes 1-2 zooms / pans are needed to get features / legend
+    to show
+    map.addLayers []
+    map.legend.refresh()
 

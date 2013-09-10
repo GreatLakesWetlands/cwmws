@@ -201,7 +201,8 @@
           map: map,
           layerInfos: layerInfo
         }, "legendDiv");
-        return legendDijit.startup();
+        legendDijit.startup();
+        return map.legend = legendDijit;
       }
     });
     /* BasemapGallery
@@ -367,9 +368,11 @@
     basemapGallery.on('selection-change', function() {
       return registry.byId("basemap-gallery").toggle();
     });
-    return registry.byId("select-rect").on("click", function() {
+    registry.byId("select-rect").on("click", function() {
       return select('rectangle');
     });
+    map.addLayers([]);
+    return map.legend.refresh();
   });
 
 }).call(this);

@@ -39,11 +39,33 @@
         <div id="rightPane"
         data-dojo-type="dijit/layout/ContentPane"
         data-dojo-props="region:'right'">
-            <div data-dojo-type="dijit/layout/AccordionContainer">
+                   
+            <div data-dojo-type="dijit/TitlePane" id='legend'
+                data-dojo-props="region:'right', title:'Legend', closable:false, open:true">
             
-                <div data-dojo-type="dijit/layout/ContentPane"
-                data-dojo-props="title:'Tools'">
                 
+                <div data-dojo-type="dijit/layout/ContentPane"
+                id="legendPane"
+                data-dojo-props="title:'Legend', selected:true">
+                    <div id="legendDiv"></div>
+                </div>
+            </div>
+            
+            <div data-dojo-type="dijit/TitlePane" id='laters'
+                data-dojo-props="region:'right', title:'Layers', closable:false, open:false">
+            
+                <ul>
+                <li>1</li>
+                <li>1</li>
+                <li>1</li>
+                <li>1</li>
+                </ul>
+                
+            </div>
+
+            <div data-dojo-type="dijit/TitlePane" id='tools'
+                data-dojo-props="region:'right', title:'Tools', closable:false, open:false">
+        
                     <div>Find site # / address: 
                     <input data-dojo-type="dijit/form/TextBox"
                     type="text" id="address" size="20"
@@ -58,15 +80,9 @@
                     <button id="select-rect"
                     data-dojo-type="dijit/form/Button">
                     Rectangle</button><p id='select_results'></p></div>
-                    
-                </div>
-                
-                <div data-dojo-type="dijit/layout/ContentPane"
-                id="legendPane"
-                data-dojo-props="title:'Legend', selected:true">
-                    <div id="legendDiv"></div>
-                </div>
+                   
             </div>
+     
         </div>
     </div>
 </body>

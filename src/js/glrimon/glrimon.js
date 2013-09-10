@@ -371,8 +371,11 @@
     registry.byId("select-rect").on("click", function() {
       return select('rectangle');
     });
-    map.addLayers([]);
-    return map.legend.refresh();
+    /* sometimes 1-2 zooms / pans are needed to get features / legend
+    to show, so try this to avoid that
+    */
+
+    return map.addLayers([]);
   });
 
 }).call(this);

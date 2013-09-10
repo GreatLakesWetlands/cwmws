@@ -462,7 +462,6 @@ require [
     registry.byId("select-rect").on "click", -> select('rectangle')
 
     ### sometimes 1-2 zooms / pans are needed to get features / legend
-    to show
+    to show, so try this to avoid that ###
     map.addLayers []
-    map.legend.refresh()
 

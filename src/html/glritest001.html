@@ -23,22 +23,14 @@
         <div data-dojo-type="dijit/layout/ContentPane"
         data-dojo-props="region:'center'" style="overflow:hidden;">
             <div style="position:absolute; left:15px; top:7px; z-Index:999;">
-
-                <div data-dojo-type="dijit/TitlePane" id='basemap-gallery'
-                data-dojo-props="region:'right', title:'Switch Basemap', closable:false, open:false">
-
-                    <div data-dojo-type="dijit/layout/ContentPane"
-                    style="width:380px; height:380px; overflow:auto;">
-
-                        <div id="basemapGallery"></div>
-                    </div>
-                </div>
+                
+                
             </div>
             <div id="map" ></div>
         </div>
-        <div id="rightPane"
+        <div id="sidePane"
         data-dojo-type="dijit/layout/ContentPane"
-        data-dojo-props="region:'right'">
+        data-dojo-props="region:'left'">
                    
             <div data-dojo-type="dijit/TitlePane" id='legend'
                 data-dojo-props="region:'right', title:'Legend', closable:false, open:true">
@@ -50,6 +42,14 @@
                     <div id="legendDiv"></div>
                 </div>
             </div>
+            
+            
+            <div data-dojo-type="dijit/TitlePane" id='basemap-gallery-panel'
+            data-dojo-props="region:'right', title:'Basemap', closable:false, open:false">
+
+                    <div id="basemapGallery"></div>
+            </div>
+
             
             <div data-dojo-type="dijit/TitlePane" id='laters'
                 data-dojo-props="region:'right', title:'Layers', closable:false, open:false">

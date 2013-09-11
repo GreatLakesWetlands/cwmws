@@ -13,6 +13,10 @@ html, body, #map {
   }
 */
 
+.layers-list {
+  list-style-type: none;
+  }
+
 #basemap-gallery-panel_pane {
   padding: 0.4em;
   }

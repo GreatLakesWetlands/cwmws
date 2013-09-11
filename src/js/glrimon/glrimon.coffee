@@ -94,6 +94,7 @@ require([
     'dijit/Dialog',
     'dijit/form/TextBox',
     'dijit/form/Button',
+    "dijit/form/CheckBox",
     'dijit/layout/BorderContainer',
     'esri/config',
     'esri/sniff',
@@ -152,6 +153,7 @@ require([
     Dialog,
     TextBox,
     Button,
+    CheckBox,
     BorderContainer,
     esriConfig,
     has,
@@ -224,6 +226,8 @@ require([
             
         map.disableMapNavigation()
         esri.bundle.toolbars.draw.addShape = "Click and drag from corner to corner"
+        dom.byId('select_results').innerHTML = 
+                    "Draw a rectangle on the map"
         toolbar.activate esri.toolbars.Draw.RECTANGLE
         
     ### setup misc #################################################################
@@ -283,6 +287,33 @@ require([
             legendDijit.startup()
             map.legend = legendDijit
 
+    ### set up layer picker ########################################################
+
+    map.on "layers-add-result", (evt) ->
+        ul = dojo_query "#layers"
+        for layer in sites.layerInfos
+            console.log ul, layer
+            li = domConstruct.create 'li', {}, ul[0]
+            cb = new CheckBox 
+                value: layer.name, 
+                id: 'cb_'+layer.name
+                checked: layer.defaultVisibility
+              , 
+                ''
+            domConstruct.place cb.domNode, li
+            domConstruct.create 'label', 
+                innerHTML: layer.name
+                for: 'cb_'+layer.name
+              ,
+                li
+            cb.on 'change', do (layer=layer) -> (visible) ->            
+                if not visible
+                    sites.visibleLayers = sites.visibleLayers.filter (i) ->
+                        i isnt layer.id
+                else
+                    if layer.id not in sites.visibleLayers
+                        sites.visibleLayers.push layer.id
+                sites.setVisibleLayers sites.visibleLayers
     ### BasemapGallery #############################################################
 
     basemapGallery = new BasemapGallery
@@ -495,12 +526,14 @@ require([
             map.query_click = map.on 'click', querySites
             m.setTool evt.toolName, false
             
-        for layer_id in map.layerIds
-            layer = map.getLayer(layer_id)
-            console.log layer
+    # * * * layerDefinitions available for ArcGISDynamicMapServiceLayer
+
+
         
     ### sometimes 1-2 zooms / pans are needed to get features / legend
     to show, so try this to avoid that ###
     map.addLayers []
 
+
 )
+

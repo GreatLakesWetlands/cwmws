@@ -389,13 +389,13 @@
 
     map.query_click = map.on('click', querySites);
     basemapGallery.on('selection-change', function() {
-      return registry.byId("basemap-gallery-panel").toggle();
+      return registry.byId("basemap-gallery-pane").toggle();
     });
     registry.byId("select-rect").on("click", function() {
       return select('rectangle');
     });
     map.on('load', function(evt) {
-      var m;
+      var layer, layer_id, m, _k, _len1, _ref1, _results;
       m = new Measurement({
         map: evt.map
       }, 'measurement');
@@ -403,11 +403,19 @@
       dojo_query('#measurement').on('click', function() {
         return evt.map.query_click.remove();
       });
-      return m.on('measure-end', function(evt) {
+      m.on('measure-end', function(evt) {
         console.log(evt);
         map.query_click = map.on('click', querySites);
         return m.setTool(evt.toolName, false);
       });
+      _ref1 = map.layerIds;
+      _results = [];
+      for (_k = 0, _len1 = _ref1.length; _k < _len1; _k++) {
+        layer_id = _ref1[_k];
+        layer = map.getLayer(layer_id);
+        _results.push(console.log(layer));
+      }
+      return _results;
     });
     /* sometimes 1-2 zooms / pans are needed to get features / legend
     to show, so try this to avoid that

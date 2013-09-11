@@ -32,7 +32,7 @@
         data-dojo-type="dijit/layout/ContentPane"
         data-dojo-props="region:'left'">
                    
-            <div data-dojo-type="dijit/TitlePane" id='legend'
+            <div data-dojo-type="dijit/TitlePane" id='legend_pane'
                 data-dojo-props="region:'right', title:'Legend', closable:false, open:true">
             
                 
@@ -44,27 +44,22 @@
             </div>
             
             
-            <div data-dojo-type="dijit/TitlePane" id='basemap-gallery-panel'
+            <div data-dojo-type="dijit/TitlePane" id='basemap-gallery-pane'
             data-dojo-props="region:'right', title:'Basemap', closable:false, open:false">
 
                     <div id="basemapGallery"></div>
             </div>
 
             
-            <div data-dojo-type="dijit/TitlePane" id='laters'
-                data-dojo-props="region:'right', title:'Layers', closable:false, open:false">
+            <div data-dojo-type="dijit/TitlePane" id='layers-pane'
+                data-dojo-props="region:'right', title:'Layers', closable:false, open:true">
             
-                <ul>
-                <li>1</li>
-                <li>1</li>
-                <li>1</li>
-                <li>1</li>
-                </ul>
+                <div id='layers'></div>
                 
             </div>
 
 
-            <div data-dojo-type="dijit/TitlePane" id='sites'
+            <div data-dojo-type="dijit/TitlePane" id='sites-pane'
                 data-dojo-props="region:'right', title:'Sites', closable:false, open:false">
         
                     <div class="search-box"></div>
@@ -78,7 +73,7 @@
 
             </div>
 
-            <div data-dojo-type="dijit/TitlePane" id='tools'
+            <div data-dojo-type="dijit/TitlePane" id='tools-pane'
                 data-dojo-props="region:'right', title:'Tools', closable:false, open:false">
                     <div class="search-box"></div>
                     

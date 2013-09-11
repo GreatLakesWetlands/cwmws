@@ -482,7 +482,7 @@ require([
 
     map.query_click = map.on 'click', querySites
     basemapGallery.on 'selection-change', -> 
-        registry.byId("basemap-gallery-panel").toggle()
+        registry.byId("basemap-gallery-pane").toggle()
 
     registry.byId("select-rect").on "click", -> select('rectangle')
 
@@ -494,6 +494,10 @@ require([
             console.log evt 
             map.query_click = map.on 'click', querySites
             m.setTool evt.toolName, false
+            
+        for layer_id in map.layerIds
+            layer = map.getLayer(layer_id)
+            console.log layer
         
     ### sometimes 1-2 zooms / pans are needed to get features / legend
     to show, so try this to avoid that ###

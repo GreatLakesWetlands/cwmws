@@ -48,7 +48,7 @@ querySites = (e) ->
 
 ### main #######################################################################
 
-require [
+require([
     'esri/map',
     'esri/layers/ArcGISDynamicMapServiceLayer',
     'esri/layers/WMSLayer',
@@ -62,7 +62,7 @@ require [
     'esri/symbols/SimpleMarkerSymbol',
     'esri/symbols/SimpleLineSymbol',
     'esri/symbols/SimpleFillSymbol',
-    "esri/toolbars/draw",
+    'esri/toolbars/draw',
     'dojo/_base/Color',
     'dojo/_base/array',
     'dojo/parser',
@@ -70,6 +70,7 @@ require [
     'esri/arcgis/utils',
     'esri/dijit/Popup',
     'esri/dijit/PopupTemplate',
+    'esri/dijit/Measurement',
     'dojo/dom-class',
     'dojo/dom-construct',
     'dojo/on',
@@ -84,7 +85,7 @@ require [
     'esri/geometry/Point',
     'esri/geometry/Extent',
     'esri/geometry/webMercatorUtils',
-    "esri/layers/ImageParameters",
+    'esri/layers/ImageParameters',
     'dojo/number',
     'dojo/dom',
     'dojo/json',
@@ -94,10 +95,16 @@ require [
     'dijit/form/TextBox',
     'dijit/form/Button',
     'dijit/layout/BorderContainer',
+    'esri/config',
+    'esri/sniff',
+    'esri/SnappingManager',
+    'esri/tasks/GeometryService',
     'dijit/layout/ContentPane',
     'dijit/layout/AccordionContainer',
     'dijit/TitlePane',
     'dijit/form/Textarea',
+    'esri/dijit/Scalebar',
+    'dijit/form/CheckBox',
     'dojo/domReady!'
 ], (
     Map,
@@ -121,6 +128,7 @@ require [
     arcgisUtils,
     Popup,
     PopupTemplate,
+    Measurement,
     domClass,
     domConstruct,
     dojo_on,
@@ -144,6 +152,11 @@ require [
     Dialog,
     TextBox,
     Button,
+    BorderContainer,
+    esriConfig,
+    has,
+    SnappingManager,
+    GeometryService
 ) ->
     
     ### show_species ###############################################################
@@ -467,13 +480,23 @@ require [
 
     ### connect signals ############################################################
 
-    map.on 'click', querySites
+    map.query_click = map.on 'click', querySites
     basemapGallery.on 'selection-change', -> 
         registry.byId("basemap-gallery-panel").toggle()
 
     registry.byId("select-rect").on "click", -> select('rectangle')
 
+    map.on 'load', (evt) ->
+        m = new Measurement map: evt.map, 'measurement'
+        m.startup()
+        dojo_query('#measurement').on 'click', -> evt.map.query_click.remove()
+        m.on 'measure-end', (evt) ->
+            console.log evt 
+            map.query_click = map.on 'click', querySites
+            m.setTool evt.toolName, false
+        
     ### sometimes 1-2 zooms / pans are needed to get features / legend
     to show, so try this to avoid that ###
     map.addLayers []
 
+)

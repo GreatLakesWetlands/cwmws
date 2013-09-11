@@ -82,7 +82,7 @@
   */
 
 
-  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', 'esri/symbols/SimpleFillSymbol', "esri/toolbars/draw", 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', "esri/layers/ImageParameters", 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dojo/query', 'dijit/Dialog', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/layout/BorderContainer', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Textarea', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, Query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Draw, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, domClass, domConstruct, dojo_on, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, ImageParameters, number, dom, JSON, registry, dojo_query, Dialog, TextBox, Button) {
+  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', 'esri/symbols/SimpleFillSymbol', 'esri/toolbars/draw', 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'esri/dijit/Measurement', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'esri/layers/ImageParameters', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dojo/query', 'dijit/Dialog', 'dijit/form/TextBox', 'dijit/form/Button', 'dijit/layout/BorderContainer', 'esri/config', 'esri/sniff', 'esri/SnappingManager', 'esri/tasks/GeometryService', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Textarea', 'esri/dijit/Scalebar', 'dijit/form/CheckBox', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, Query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Draw, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, Measurement, domClass, domConstruct, dojo_on, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, ImageParameters, number, dom, JSON, registry, dojo_query, Dialog, TextBox, Button, BorderContainer, esriConfig, has, SnappingManager, GeometryService) {
     /* show_species
     */
 
@@ -387,12 +387,27 @@
     /* connect signals
     */
 
-    map.on('click', querySites);
+    map.query_click = map.on('click', querySites);
     basemapGallery.on('selection-change', function() {
       return registry.byId("basemap-gallery-panel").toggle();
     });
     registry.byId("select-rect").on("click", function() {
       return select('rectangle');
+    });
+    map.on('load', function(evt) {
+      var m;
+      m = new Measurement({
+        map: evt.map
+      }, 'measurement');
+      m.startup();
+      dojo_query('#measurement').on('click', function() {
+        return evt.map.query_click.remove();
+      });
+      return m.on('measure-end', function(evt) {
+        console.log(evt);
+        map.query_click = map.on('click', querySites);
+        return m.setTool(evt.toolName, false);
+      });
     });
     /* sometimes 1-2 zooms / pans are needed to get features / legend
     to show, so try this to avoid that

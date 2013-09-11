@@ -91,11 +91,12 @@ require [
     'dijit/registry',
     'dojo/query',
     'dijit/Dialog',
+    'dijit/form/TextBox',
+    'dijit/form/Button',
     'dijit/layout/BorderContainer',
     'dijit/layout/ContentPane',
     'dijit/layout/AccordionContainer',
     'dijit/TitlePane',
-    'dijit/form/Button',
     'dijit/form/Textarea',
     'dojo/domReady!'
 ], (
@@ -140,7 +141,9 @@ require [
     JSON,
     registry,
     dojo_query,
-    Dialog
+    Dialog,
+    TextBox,
+    Button,
 ) ->
     
     ### show_species ###############################################################
@@ -280,11 +283,10 @@ require [
 
     locator = new Locator         "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
 
-    locate = ->
-        dom.byId('find_active').innerHTML = 'Searching, please wait'
+    locate = (address, status) ->
         
-        address = dom.byId("address").value
-        
+        status.innerHTML = 'Searching...'
+
         ### if only digits, treat as a site number ###
         non_digit = false
         for c in address
@@ -306,23 +308,33 @@ require [
             qt = new esri.tasks.QueryTask layer_url + '/1'
             def = qt.execute q
             def.addCallback (result) ->
-        
                 if result.features.length > 0
-                    text = ""
+                    status.innerHTML = ""
                     map.setExtent result.features[0].geometry.getExtent().expand 1.5
                 else
-                    text = "Site #{address} not found"
-                    
-                dom.byId('find_active').innerHTML = text        
+                    status.innerHTML = "Site #{address} not found"     
         
-    registry.byId("locate").on "click", locate  
-    registry.byId("address").on "keyup", (evt) ->
-        if evt.keyCode != Keys.ENTER
-            return
-        locate()
-
+    dojo_query(".search-box").forEach (node) ->
+        
+        domConstruct.create "div", innerHTML: "Find site # / address:", node
+        tb = new TextBox style: 'width: 12em', value: '123', ''
+        domConstruct.place tb.domNode, node
+        bt = new Button innerHTML: "Find", ''
+        domConstruct.place bt.domNode, node
+        status = domConstruct.create "div", 
+            class: 'find-active', node
+        
+        tb.on 'keyup', do (tb=tb, status=status) -> (evt) ->
+            if evt.keyCode != Keys.ENTER
+                return
+            locate tb.get('value'), status
+        bt.on 'click', do (tb=tb, status=status) -> (evt) -> locate tb.get('value'), status
+        
     locator.on "address-to-locations-complete", (evt) ->
-        dom.byId('find_active').innerHTML = ''
+
+        dojo_query(".find-active").forEach (node) ->
+            node.innerHTML = ''
+        
         map.graphics.clear()
         geocodeResult = evt.addresses[0]
         r = Math.floor Math.random() * 250
@@ -457,7 +469,7 @@ require [
 
     map.on 'click', querySites
     basemapGallery.on 'selection-change', -> 
-        registry.byId("basemap-gallery").toggle()
+        registry.byId("basemap-gallery-panel").toggle()
 
     registry.byId("select-rect").on "click", -> select('rectangle')
 

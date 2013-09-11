@@ -63,16 +63,11 @@
                 
             </div>
 
-            <div data-dojo-type="dijit/TitlePane" id='tools'
-                data-dojo-props="region:'right', title:'Tools', closable:false, open:false">
+
+            <div data-dojo-type="dijit/TitlePane" id='sites'
+                data-dojo-props="region:'right', title:'Sites', closable:false, open:false">
         
-                    <div>Find site # / address: 
-                    <input data-dojo-type="dijit/form/TextBox"
-                    type="text" id="address" size="20"
-                    value="mackinaw bridge" />
-                    <button id="locate"
-                    data-dojo-type="dijit/form/Button">
-                    Find</button><span id='find_active'></span></div>
+                    <div class="search-box"></div>
                     
                     <hr/>
                     
@@ -80,9 +75,19 @@
                     <button id="select-rect"
                     data-dojo-type="dijit/form/Button">
                     Rectangle</button><p id='select_results'></p></div>
-                   
+
             </div>
-     
+
+            <div data-dojo-type="dijit/TitlePane" id='tools'
+                data-dojo-props="region:'right', title:'Tools', closable:false, open:false">
+                    <div class="search-box"></div>
+                    
+                    <hr/>
+                    
+                    <p>Measure tools here</p>       
+            </div>
+
+                 
         </div>
     </div>
 </body>

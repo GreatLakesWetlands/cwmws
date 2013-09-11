@@ -14,6 +14,8 @@
 
   map = {};
 
+  window.selected_sites = [];
+
   layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest001/MapServer";
 
   /* querySites
@@ -83,10 +85,19 @@
 
 
   require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', 'esri/symbols/SimpleFillSymbol', 'esri/toolbars/draw', 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'esri/dijit/Measurement', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'esri/layers/ImageParameters', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dojo/query', 'dijit/Dialog', 'dijit/form/TextBox', 'dijit/form/Button', "dijit/form/CheckBox", 'dijit/layout/BorderContainer', 'esri/config', 'esri/sniff', 'esri/SnappingManager', 'esri/tasks/GeometryService', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Textarea', 'esri/dijit/Scalebar', 'dijit/form/CheckBox', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, Query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Draw, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, Measurement, domClass, domConstruct, dojo_on, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, ImageParameters, number, dom, JSON, registry, dojo_query, Dialog, TextBox, Button, CheckBox, BorderContainer, esriConfig, has, SnappingManager, GeometryService) {
-    /* show_species
+    /* setup misc
     */
 
     var basemapGallery, colors, drawing_options, i, line_renderer, link, locate, locator, opts, perimeter, popup, range, renderer, select, show_species, sites, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
+    parser.parse();
+    popup = new Popup({
+      titleInBody: false
+    }, domConstruct.create("div"));
+    star = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_SQUARE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0, 0, 255]), 2), new Color([0, 255, 0, 0.25]));
+    perimeter = new SimpleFillSymbol(SimpleFillSymbol.STYLE_NULL, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color([0, 0, 0]));
+    /* show_species
+    */
+
     show_species = function(evt) {
       var def, feature, q, qt, site;
       feature = map.infoWindow.getSelectedFeature();
@@ -147,7 +158,23 @@
         qt = new esri.tasks.QueryTask(layer_url + '/1');
         def = qt.execute(q);
         return def.addCallback(function(result) {
-          return dom.byId('select_results').innerHTML = "" + result.features.length + " sites.";
+          var i, locationGraphic, symbol, text, _i, _len, _ref, _ref1;
+          symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0, 255, 255, 0.5], 1)), new Color([0, 255, 255, 0.9]));
+          _ref = result.features;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            if (_ref1 = i.attributes.site, __indexOf.call(window.selected_sites, _ref1) < 0) {
+              window.selected_sites.push(i.attributes.site);
+              locationGraphic = new Graphic(i.geometry.getExtent().getCenter(), symbol);
+              map.graphics.add(locationGraphic);
+            }
+          }
+          if (window.selected_sites.length === result.features.length) {
+            text = "" + result.features.length + " sites.";
+          } else {
+            text = "" + result.features.length + " sites, total selected now " + window.selected_sites.length + ".";
+          }
+          return dom.byId('select_results').innerHTML = text;
         });
       });
       map.disableMapNavigation();
@@ -155,15 +182,6 @@
       dom.byId('select_results').innerHTML = "Draw a rectangle on the map";
       return toolbar.activate(esri.toolbars.Draw.RECTANGLE);
     };
-    /* setup misc
-    */
-
-    parser.parse();
-    popup = new Popup({
-      titleInBody: false
-    }, domConstruct.create("div"));
-    star = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_SQUARE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0, 0, 255]), 2), new Color([0, 255, 0, 0.25]));
-    perimeter = new SimpleFillSymbol(SimpleFillSymbol.STYLE_NULL, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color([0, 0, 0]));
     /* create map
     */
 
@@ -216,7 +234,6 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         layer = _ref[_i];
-        console.log(ul, layer);
         li = domConstruct.create('li', {}, ul[0]);
         cb = new CheckBox({
           value: layer.name,
@@ -432,6 +449,11 @@
     basemapGallery.on('selection-change', function() {
       return registry.byId("basemap-gallery-pane").toggle();
     });
+    registry.byId("select-clear").on("click", function() {
+      window.selected_sites = [];
+      dom.byId('select_results').innerHTML = "No sites selected.";
+      return map.graphics.clear();
+    });
     registry.byId("select-rect").on("click", function() {
       return select('rectangle');
     });
@@ -445,7 +467,6 @@
         return evt.map.query_click.remove();
       });
       return m.on('measure-end', function(evt) {
-        console.log(evt);
         map.query_click = map.on('click', querySites);
         return m.setTool(evt.toolName, false);
       });

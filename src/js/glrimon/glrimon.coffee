@@ -6,6 +6,8 @@
 
 map = {}
 
+window.selected_sites = []
+
 layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest001/MapServer"
 
 ### querySites #################################################################
@@ -161,6 +163,24 @@ require([
     GeometryService
 ) ->
     
+    ### setup misc #################################################################
+
+    parser.parse()  
+
+    popup = new Popup
+        titleInBody: false, 
+        domConstruct.create "div"
+
+    star = new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_SQUARE, 8,
+        new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+            new Color([0,0,255]), 2,
+        new Color([0,255,0,0.25])
+
+    perimeter = new SimpleFillSymbol SimpleFillSymbol.STYLE_NULL,
+        new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+            new Color([255,0,0]), 2
+        new Color([0,0,0])
+
     ### show_species ###############################################################
 
     show_species = (evt) ->
@@ -221,8 +241,29 @@ require([
             qt = new esri.tasks.QueryTask layer_url + '/1'
             def = qt.execute q
             def.addCallback (result) ->
-                dom.byId('select_results').innerHTML = 
-                    "#{result.features.length} sites."
+            
+                    
+                symbol = new SimpleMarkerSymbol(
+                    SimpleMarkerSymbol.STYLE_CIRCLE, 
+                    8, 
+                    new SimpleLineSymbol(
+                        SimpleLineSymbol.STYLE_SOLID, 
+                        new Color [0, 255, 255, 0.5], 
+                        1
+                    ), new Color [0, 255, 255, 0.9])      
+            
+                for i in result.features
+                    if i.attributes.site not in window.selected_sites
+                        window.selected_sites.push i.attributes.site
+                        locationGraphic = new Graphic(i.geometry.getExtent().getCenter(), symbol)
+                        map.graphics.add locationGraphic
+
+                if window.selected_sites.length == result.features.length
+                    text = "#{result.features.length} sites."
+                else
+                    text = "#{result.features.length} sites, total selected now #{window.selected_sites.length}."
+                dom.byId('select_results').innerHTML = text
+                
             
         map.disableMapNavigation()
         esri.bundle.toolbars.draw.addShape = "Click and drag from corner to corner"
@@ -230,24 +271,6 @@ require([
                     "Draw a rectangle on the map"
         toolbar.activate esri.toolbars.Draw.RECTANGLE
         
-    ### setup misc #################################################################
-
-    parser.parse()  
-
-    popup = new Popup
-        titleInBody: false, 
-        domConstruct.create "div"
-
-    star = new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_SQUARE, 8,
-        new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-            new Color([0,0,255]), 2,
-        new Color([0,255,0,0.25])
-
-    perimeter = new SimpleFillSymbol SimpleFillSymbol.STYLE_NULL,
-        new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-            new Color([255,0,0]), 2
-        new Color([0,0,0])
-
     ### create map #################################################################
 
     map = new Map "map",
@@ -292,7 +315,6 @@ require([
     map.on "layers-add-result", (evt) ->
         ul = dojo_query "#layers"
         for layer in sites.layerInfos
-            console.log ul, layer
             li = domConstruct.create 'li', {}, ul[0]
             cb = new CheckBox 
                 value: layer.name, 
@@ -515,6 +537,11 @@ require([
     basemapGallery.on 'selection-change', -> 
         registry.byId("basemap-gallery-pane").toggle()
 
+    registry.byId("select-clear").on "click", ->
+        window.selected_sites = []
+        dom.byId('select_results').innerHTML = "No sites selected."
+        map.graphics.clear()
+        
     registry.byId("select-rect").on "click", -> select('rectangle')
 
     map.on 'load', (evt) ->
@@ -522,7 +549,6 @@ require([
         m.startup()
         dojo_query('#measurement').on 'click', -> evt.map.query_click.remove()
         m.on 'measure-end', (evt) ->
-            console.log evt 
             map.query_click = map.on 'click', querySites
             m.setTool evt.toolName, false
             

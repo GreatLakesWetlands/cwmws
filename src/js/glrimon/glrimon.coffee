@@ -282,6 +282,8 @@ require([
         infoWindow: popup
         minScale: 10000000
 
+    map.markers = []
+    ### address locator graphics markers ###
     ### links from popup ###########################################################
 
     link = domConstruct.create "a",
@@ -401,7 +403,13 @@ require([
         dojo_query(".find-active").forEach (node) ->
             node.innerHTML = ''
         
-        map.graphics.clear()
+        console.log map
+        for i in map.markers
+            console.log i
+            map.graphics.remove i
+            console.log 'removed'
+        map.markers = []
+            
         geocodeResult = evt.addresses[0]
         r = Math.floor Math.random() * 250
         g = Math.floor Math.random() * 100
@@ -426,7 +434,9 @@ require([
         ).setOffset(5, 15)
 
         map.graphics.add locationGraphic
-        map.graphics.add new Graphic(pointMeters, textSymbol)
+        text = new Graphic(pointMeters, textSymbol)
+        map.graphics.add text
+        map.markers = [locationGraphic, text]
         
         ptAttr = evt.addresses[0].attributes
         minx = parseFloat ptAttr.Xmin
@@ -438,6 +448,38 @@ require([
         map.setExtent webMercatorUtils.geographicToWebMercator esriExtent 
 
         # showResults(evt.addresses);
+
+    ### SimpleRenderer #############################################################
+
+    renderer = new SimpleRenderer star
+
+    line_renderer = SimpleRenderer perimeter
+
+    ### UniqueValueRenderer ########################################################
+
+    renderer = new UniqueValueRenderer star, 'geomorph'
+
+    things =[
+        value: 'riverine'
+        color: [0,255,0]
+      ,
+        value: 'barrier (protected)'
+        color: [255,0,0]
+      ,
+        value: 'lacustrine (coastal)'
+        color: [0,0,255]
+    ]
+
+    for thing in things                
+        renderer.addValue 
+            value: thing.value
+            symbol:
+                new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
+                    new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+                        new Color(thing.color), 2,
+                    new Color([255,128,128])
+            label: thing.value
+            description: thing.value
 
     ### ClassBreaksRenderer ########################################################
 
@@ -471,38 +513,6 @@ require([
                 new Color(colors[i])
                 
         console.log start, stop, colors[i]
-
-    ### SimpleRenderer #############################################################
-
-    renderer = new SimpleRenderer star
-
-    line_renderer = SimpleRenderer perimeter
-
-    ### UniqueValueRenderer ########################################################
-
-    renderer = new UniqueValueRenderer star, 'geomorph'
-
-    things =[
-        value: 'riverine'
-        color: [0,255,0]
-      ,
-        value: 'barrier (protected)'
-        color: [255,0,0]
-      ,
-        value: 'lacustrine (coastal)'
-        color: [0,0,255]
-    ]
-
-    for thing in things                
-        renderer.addValue 
-            value: thing.value
-            symbol:
-                new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
-                    new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-                        new Color(thing.color), 2,
-                    new Color([255,128,128])
-            label: thing.value
-            description: thing.value
 
     ### load sites layer ###########################################################
 

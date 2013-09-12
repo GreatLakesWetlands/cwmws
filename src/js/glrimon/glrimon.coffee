@@ -219,7 +219,7 @@ require([
                 title: "Species for site #{site}"
                 content: div
             ans.show()
-            
+
     ### select #####################################################################
 
     select = (shape) ->
@@ -270,7 +270,7 @@ require([
         dom.byId('select_results').innerHTML = 
                     "Draw a rectangle on the map"
         toolbar.activate esri.toolbars.Draw.RECTANGLE
-        
+
     ### create map #################################################################
 
     map = new Map "map",
@@ -284,6 +284,7 @@ require([
 
     map.markers = []
     ### address locator graphics markers ###
+
     ### links from popup ###########################################################
 
     link = domConstruct.create "a",
@@ -338,6 +339,7 @@ require([
                     if layer.id not in sites.visibleLayers
                         sites.visibleLayers.push layer.id
                 sites.setVisibleLayers sites.visibleLayers
+
     ### BasemapGallery #############################################################
 
     basemapGallery = new BasemapGallery
@@ -572,4 +574,5 @@ require([
 
 
 )
+
 

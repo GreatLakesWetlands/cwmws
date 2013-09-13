@@ -1,35 +1,61 @@
-# where to stage files - DELETED on update
-OUT_DIR=/home/tbrown/n/proj/GLRI/mon/data/cwm_export
 
-# connection spec.
-HOST=beaver.nrri.umn.edu
-PORT=5432
-HOST=127.0.0.1
-PORT=15432
-DBNAME=nrgisl01
-PASSWORD="$(cat ~/.nrpwd)"
-CONSPEC="PG:host=$HOST port=$PORT dbname=$DBNAME password=$PASSWORD"
+drop view if exists glrimon_misc.cwm_site_export;
+create view glrimon_misc.cwm_site_export as
 
-rm -rf "$OUT_DIR"
-mkdir -p "$OUT_DIR"
-echo "-- Exported $(date)" >"$OUT_DIR/00README.TXT"
+with fish_ibi as (
+select distinct on (site) table_id as site, score
+  from glrimon.fi_ibi_static_score
+       join glrimon.fi_ibi_attr using (ibi_attr)
+ where table_name = 'Fi_sampling' and
+       fi_ibi_attr.name = 'Site fish IBI total score'
+), 
+
+veg_ibi as (
+select distinct on (site) site, score
+  from glrimon.fi_ibi_static_score
+       join glrimon.fi_ibi_attr using (ibi_attr),
+       glrimon.v_sampling
+ where table_name = 'V_sampling' and
+       fi_ibi_attr.name = 'Veg. IBI'
+       and table_id = sampling
+), 
+
+invert_ibi as (
+select distinct on (site) table_id as site, score
+  from glrimon.fi_ibi_static_score
+       join glrimon.fi_ibi_attr using (ibi_attr)
+ where table_name = 'Fi_sampling' and
+       fi_ibi_attr.name = 'Site invert. IBI total score'
+)
+
+select site, 
+       name, 
+       veg_ibi.score as veg_ibi,
+       fish_ibi.score as fish_ibi,
+       invert_ibi.score as invert_ibi,
+       st_y(st_centroid(simp_geom)) as lat,
+       st_x(st_centroid(simp_geom)) as lon,
+       (select substring(tagging_tag.name from 8)
+          from glrimon.tagging_taggeditem, glrimon.tagging_tag
+         where tag_id = tagging_tag.id and object_id = site and 
+               tagging_tag.name ~ 'class: ') as geomorph
+    
+  from glrimon.site
+       left join veg_ibi using (site)
+       left join fish_ibi using (site)
+       left join invert_ibi using (site)
+ where exists (
+       select 1 
+         from glrimon.tagging_taggeditem
+              join glrimon.tagging_tag on (tagging_taggeditem.tag_id =
+                tagging_tag.id)
+        where tagging_taggeditem.object_id = site.site and
+              tagging_tag.name ~ 'in-year: '
+       )
+ order by site
+;
 
 
-# shapefiles
-ogr2ogr -f 'ESRI Shapefile' "$OUT_DIR/sites.shp" "$CONSPEC" \
-  -sql "
-select glrimon_misc.cwm_site_export.*, simp_geom
-  from glrimon_misc.cwm_site_export 
-       join glrimon.site using (site)
-"
-ogr2ogr -f 'ESRI Shapefile' "$OUT_DIR/centroids.shp" "$CONSPEC" \
-  -sql "
-select glrimon_misc.cwm_site_export.*, st_centroid(simp_geom)
-  from glrimon_misc.cwm_site_export 
-       join glrimon.site using (site)
-"
-
-# species list
 SQL="select site, 'plant' as taxa, v_taxa.name
      from glrimon.v_taxa
           join glrimon.v_observation using (taxa)

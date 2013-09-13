@@ -88,7 +88,7 @@
     /* setup misc
     */
 
-    var basemapGallery, colors, drawing_options, i, line_renderer, link, locate, locator, opts, perimeter, popup, range, renderer, select, show_species, sites, star, start, step, steps, stop, thing, things, _i, _j, _len, _ref;
+    var basemapGallery, breaks_renderer, colors, drawing_options, i, line_renderer, link, locate, locator, opts, perimeter, popup, range, renderer, select, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, _i, _j, _len, _ref;
     parser.parse();
     popup = new Popup({
       titleInBody: false
@@ -159,7 +159,7 @@
         def = qt.execute(q);
         return def.addCallback(function(result) {
           var i, locationGraphic, symbol, text, _i, _len, _ref, _ref1;
-          symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0, 255, 255, 0.5], 1)), new Color([0, 255, 255, 0.9]));
+          symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 12, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0, 255, 255, 0.5], 0)), new Color([0, 255, 255, 1]));
           _ref = result.features;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             i = _ref[_i];
@@ -388,12 +388,12 @@
     /* SimpleRenderer
     */
 
-    renderer = new SimpleRenderer(star);
+    simple_renderer = new SimpleRenderer(star);
     line_renderer = SimpleRenderer(perimeter);
     /* UniqueValueRenderer
     */
 
-    renderer = new UniqueValueRenderer(star, 'geomorph');
+    unique_renderer = new UniqueValueRenderer(star, 'geomorph');
     things = [
       {
         value: 'riverine',
@@ -408,7 +408,7 @@
     ];
     for (_i = 0, _len = things.length; _i < _len; _i++) {
       thing = things[_i];
-      renderer.addValue({
+      unique_renderer.addValue({
         value: thing.value,
         symbol: new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color(thing.color), 2), new Color([255, 128, 128])),
         label: thing.value,
@@ -418,7 +418,7 @@
     /* ClassBreaksRenderer
     */
 
-    renderer = new ClassBreaksRenderer(star, 'lon');
+    breaks_renderer = new ClassBreaksRenderer(star, 'lon');
     colors = [[255, 0, 0], [255, 128, 0], [128, 128, 0], [0, 128, 128], [0, 0, 255]];
     range = [-92, -74];
     steps = colors.length;
@@ -434,12 +434,13 @@
         start = range[0] + i * step;
         stop = range[0] + (i + 1) * step;
       }
-      renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color(colors[i])));
+      breaks_renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color(colors[i])));
       console.log(start, stop, colors[i]);
     }
     /* load sites layer
     */
 
+    renderer = unique_renderer;
     sites = new ArcGISDynamicMapServiceLayer(layer_url, {
       mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
       outFields: ["*"]

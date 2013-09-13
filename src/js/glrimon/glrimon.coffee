@@ -245,17 +245,18 @@ require([
                     
                 symbol = new SimpleMarkerSymbol(
                     SimpleMarkerSymbol.STYLE_CIRCLE, 
-                    8, 
+                    12, 
                     new SimpleLineSymbol(
                         SimpleLineSymbol.STYLE_SOLID, 
                         new Color [0, 255, 255, 0.5], 
-                        1
-                    ), new Color [0, 255, 255, 0.9])      
+                        0
+                    ), new Color [0, 255, 255, 1])      
             
                 for i in result.features
                     if i.attributes.site not in window.selected_sites
                         window.selected_sites.push i.attributes.site
-                        locationGraphic = new Graphic(i.geometry.getExtent().getCenter(), symbol)
+                        locationGraphic = new Graphic i.geometry.getExtent().getCenter(),
+                            symbol
                         map.graphics.add locationGraphic
 
                 if window.selected_sites.length == result.features.length
@@ -453,13 +454,13 @@ require([
 
     ### SimpleRenderer #############################################################
 
-    renderer = new SimpleRenderer star
+    simple_renderer = new SimpleRenderer star
 
     line_renderer = SimpleRenderer perimeter
 
     ### UniqueValueRenderer ########################################################
 
-    renderer = new UniqueValueRenderer star, 'geomorph'
+    unique_renderer = new UniqueValueRenderer star, 'geomorph'
 
     things =[
         value: 'riverine'
@@ -473,7 +474,7 @@ require([
     ]
 
     for thing in things                
-        renderer.addValue 
+        unique_renderer.addValue 
             value: thing.value
             symbol:
                 new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
@@ -485,7 +486,7 @@ require([
 
     ### ClassBreaksRenderer ########################################################
 
-    renderer = new ClassBreaksRenderer star, 'lon'
+    breaks_renderer = new ClassBreaksRenderer star, 'lon'
     colors = [
         [255,0,0],
         [255,128,0],
@@ -508,7 +509,7 @@ require([
             start = range[0]+i*step
             stop = range[0]+(i+1)*step
         
-        renderer.addBreak start, stop, # star,
+        breaks_renderer.addBreak start, stop, # star,
             new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
                 new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
                     new Color([255,0,0]), 2,
@@ -523,6 +524,8 @@ require([
     # #ip.transparent = true
     # ip.layerIds = [0]
     # ip.layerOption = ImageParameters.LAYER_OPTION_SHOW
+
+    renderer = unique_renderer
 
     sites = new ArcGISDynamicMapServiceLayer layer_url,
         mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,

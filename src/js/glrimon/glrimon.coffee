@@ -512,7 +512,7 @@ require([
         breaks_renderer.addBreak start, stop, # star,
             new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
                 new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-                    new Color([255,0,0]), 2,
+                    new Color([100,100,100]), 1,
                 new Color(colors[i])
                 
         console.log start, stop, colors[i]
@@ -525,12 +525,15 @@ require([
     # ip.layerIds = [0]
     # ip.layerOption = ImageParameters.LAYER_OPTION_SHOW
 
-    renderer = unique_renderer
+    renderer = breaks_renderer
 
-    sites = new ArcGISDynamicMapServiceLayer layer_url,
-        mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
+    sites = new FeatureLayer layer_url+'/0',
+        # mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
+        mode: FeatureLayer.MODE_SNAPSHOT,
         outFields: ["*"]
         # imageParameters: ip
+
+    sites.setRenderer(renderer)
 
     drawing_options = new LayerDrawingOptions()
     drawing_options.renderer = renderer
@@ -542,7 +545,7 @@ require([
     drawing_options.renderer = line_renderer
     opts[1] = drawing_options  
 
-    sites.setLayerDrawingOptions(opts)
+    # sites.setLayerDrawingOptions(opts)
             
     map.addLayers [sites]
 

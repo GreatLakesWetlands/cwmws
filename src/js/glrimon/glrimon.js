@@ -434,17 +434,18 @@
         start = range[0] + i * step;
         stop = range[0] + (i + 1) * step;
       }
-      breaks_renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2), new Color(colors[i])));
+      breaks_renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([100, 100, 100]), 1), new Color(colors[i])));
       console.log(start, stop, colors[i]);
     }
     /* load sites layer
     */
 
-    renderer = unique_renderer;
-    sites = new ArcGISDynamicMapServiceLayer(layer_url, {
-      mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
+    renderer = breaks_renderer;
+    sites = new FeatureLayer(layer_url + '/0', {
+      mode: FeatureLayer.MODE_SNAPSHOT,
       outFields: ["*"]
     });
+    sites.setRenderer(renderer);
     drawing_options = new LayerDrawingOptions();
     drawing_options.renderer = renderer;
     opts = [];
@@ -455,7 +456,6 @@
     drawing_options = new LayerDrawingOptions();
     drawing_options.renderer = line_renderer;
     opts[1] = drawing_options;
-    sites.setLayerDrawingOptions(opts);
     map.addLayers([sites]);
     /* connect signals
     */

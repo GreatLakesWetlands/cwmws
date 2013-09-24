@@ -2,10 +2,10 @@
 OUT_DIR=/home/tbrown/n/proj/GLRI/mon/data/cwm_export
 
 # connection spec.
-HOST=beaver.nrri.umn.edu
-PORT=5432
 HOST=127.0.0.1
 PORT=15432
+HOST=beaver.nrri.umn.edu
+PORT=5432
 DBNAME=nrgisl01
 PASSWORD="$(cat ~/.nrpwd)"
 CONSPEC="PG:host=$HOST port=$PORT dbname=$DBNAME password=$PASSWORD"

@@ -88,7 +88,7 @@
     /* setup misc
     */
 
-    var basemapGallery, breaks_renderer, colors, drawing_options, i, line_renderer, link, locate, locator, opts, perimeter, popup, range, renderer, select, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, _i, _j, _len, _ref;
+    var basemapGallery, breaks_renderer, centroids, colors, i, layer_list_setup_feature_layer, layer_list_setup_map_layer, layers_list, line_renderer, link, locate, locator, perimeter, popup, range, renderer, select, selected_only, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, _i, _j, _len, _ref;
     parser.parse();
     popup = new Popup({
       titleInBody: false
@@ -170,7 +170,7 @@
             }
           }
           if (window.selected_sites.length === result.features.length) {
-            text = "" + result.features.length + " sites.";
+            text = "" + result.features.length + " sites selected.";
           } else {
             text = "" + result.features.length + " sites, total selected now " + window.selected_sites.length + ".";
           }
@@ -181,6 +181,22 @@
       esri.bundle.toolbars.draw.addShape = "Click and drag from corner to corner";
       dom.byId('select_results').innerHTML = "Draw a rectangle on the map";
       return toolbar.activate(esri.toolbars.Draw.RECTANGLE);
+    };
+    /* selected_only
+    */
+
+    selected_only = function() {
+      var definition;
+      if (centroids.getDefinitionExpression()) {
+        centroids.setDefinitionExpression("");
+        return dojo_query("#select-only")[0].innerHTML = "Show selected only";
+      } else {
+        definition = "SITE in (" + (window.selected_sites.toString()) + ")";
+        console.log(definition);
+        console.log;
+        centroids.setDefinitionExpression(definition);
+        return dojo_query("#select-only")[0].innerHTML = "Show all";
+      }
     };
     /* create map
     */
@@ -228,10 +244,15 @@
         return map.legend = legendDijit;
       }
     });
-    /* set up layer picker
+    /* set up layer picker - map layer version
     */
 
-    map.on("layers-add-result", function(evt) {
+    /*
+        this version works with a ArcGISDynamicMapServiceLayer (called 'sites'),
+        disabled for now
+    */
+
+    layer_list_setup_map_layer = function(evt) {
       var cb, layer, li, ul, _i, _len, _ref, _results;
       ul = dojo_query("#layers");
       _ref = sites.layerInfos;
@@ -266,7 +287,36 @@
         })(layer)));
       }
       return _results;
-    });
+    };
+    /* set up layer picker - feature layer version
+    */
+
+    layer_list_setup_feature_layer = function(evt) {
+      var cb, layer, li, ul, _i, _len, _results;
+      ul = dojo_query("#layers");
+      _results = [];
+      for (_i = 0, _len = layers_list.length; _i < _len; _i++) {
+        layer = layers_list[_i];
+        li = domConstruct.create('li', {}, ul[0]);
+        cb = new CheckBox({
+          value: layer.name,
+          id: 'cb_' + layer.name,
+          checked: layer.defaultVisibility
+        }, '');
+        domConstruct.place(cb.domNode, li);
+        domConstruct.create('label', {
+          innerHTML: layer.name,
+          "for": 'cb_' + layer.name
+        }, li);
+        _results.push(cb.on('change', (function(layer) {
+          return function(visible) {
+            return layer.setVisibility(visible);
+          };
+        })(layer)));
+      }
+      return _results;
+    };
+    map.on("layers-add-result", layer_list_setup_feature_layer);
     /* BasemapGallery
     */
 
@@ -437,26 +487,22 @@
       breaks_renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([100, 100, 100]), 1), new Color(colors[i])));
       console.log(start, stop, colors[i]);
     }
-    /* load sites layer
+    /* load layers
     */
 
     renderer = breaks_renderer;
-    sites = new FeatureLayer(layer_url + '/0', {
+    centroids = new FeatureLayer(layer_url + '/0', {
       mode: FeatureLayer.MODE_SNAPSHOT,
       outFields: ["*"]
     });
-    sites.setRenderer(renderer);
-    drawing_options = new LayerDrawingOptions();
-    drawing_options.renderer = renderer;
-    opts = [];
-    /* zero for sub layer zero, 1 for sublayer 1, etc.
-    */
-
-    opts[0] = drawing_options;
-    drawing_options = new LayerDrawingOptions();
-    drawing_options.renderer = line_renderer;
-    opts[1] = drawing_options;
-    map.addLayers([sites]);
+    centroids.setRenderer(renderer);
+    sites = new FeatureLayer(layer_url + '/1', {
+      mode: FeatureLayer.MODE_SNAPSHOT,
+      outFields: ["*"]
+    });
+    sites.setRenderer(line_renderer);
+    layers_list = [sites, centroids];
+    map.addLayers(layers_list);
     /* connect signals
     */
 
@@ -471,6 +517,9 @@
     });
     registry.byId("select-rect").on("click", function() {
       return select('rectangle');
+    });
+    registry.byId("select-only").on("click", function() {
+      return selected_only();
     });
     map.on('load', function(evt) {
       var m;

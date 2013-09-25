@@ -24,7 +24,7 @@ select glrimon_misc.cwm_site_export.*, simp_geom
 "
 ogr2ogr -f 'ESRI Shapefile' "$OUT_DIR/centroids.shp" "$CONSPEC" \
   -sql "
-select glrimon_misc.cwm_site_export.*, st_centroid(simp_geom)
+select glrimon_misc.cwm_site_export.*, st_centroid(Box2D(simp_geom))
   from glrimon_misc.cwm_site_export 
        join glrimon.site using (site)
 "

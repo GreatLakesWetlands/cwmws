@@ -260,7 +260,7 @@ require([
                         map.graphics.add locationGraphic
 
                 if window.selected_sites.length == result.features.length
-                    text = "#{result.features.length} sites."
+                    text = "#{result.features.length} sites selected."
                 else
                     text = "#{result.features.length} sites, total selected now #{window.selected_sites.length}."
                 dom.byId('select_results').innerHTML = text
@@ -272,6 +272,19 @@ require([
                     "Draw a rectangle on the map"
         toolbar.activate esri.toolbars.Draw.RECTANGLE
 
+    ### selected_only ##############################################################
+
+    selected_only = ->
+
+        if centroids.getDefinitionExpression()
+            centroids.setDefinitionExpression ""
+            dojo_query("#select-only")[0].innerHTML = "Show selected only"
+        else
+            definition = "SITE in (#{window.selected_sites.toString()})"
+            console.log definition 
+            console.log 
+            centroids.setDefinitionExpression definition
+            dojo_query("#select-only")[0].innerHTML = "Show all"
     ### create map #################################################################
 
     map = new Map "map",
@@ -314,9 +327,14 @@ require([
             legendDijit.startup()
             map.legend = legendDijit
 
-    ### set up layer picker ########################################################
+    ### set up layer picker - map layer version ####################################
 
-    map.on "layers-add-result", (evt) ->
+    ###
+    this version works with a ArcGISDynamicMapServiceLayer (called 'sites'),
+    disabled for now
+    ###
+
+    layer_list_setup_map_layer = (evt) ->
         ul = dojo_query "#layers"
         for layer in sites.layerInfos
             li = domConstruct.create 'li', {}, ul[0]
@@ -340,6 +358,31 @@ require([
                     if layer.id not in sites.visibleLayers
                         sites.visibleLayers.push layer.id
                 sites.setVisibleLayers sites.visibleLayers
+
+    # map.on "layers-add-result", layer_list_setup_map_layer
+
+    ### set up layer picker - feature layer version ################################
+
+    layer_list_setup_feature_layer = (evt) ->
+        ul = dojo_query "#layers"
+        for layer in layers_list
+            li = domConstruct.create 'li', {}, ul[0]
+            cb = new CheckBox 
+                value: layer.name, 
+                id: 'cb_'+layer.name
+                checked: layer.defaultVisibility
+              , 
+                ''
+            domConstruct.place cb.domNode, li
+            domConstruct.create 'label', 
+                innerHTML: layer.name
+                for: 'cb_'+layer.name
+              ,
+                li
+            cb.on 'change', do (layer=layer) -> (visible) ->            
+                layer.setVisibility(visible)
+
+    map.on "layers-add-result", layer_list_setup_feature_layer
 
     ### BasemapGallery #############################################################
 
@@ -517,37 +560,24 @@ require([
                 
         console.log start, stop, colors[i]
 
-    ### load sites layer ###########################################################
-
-    # ip = new ImageParameters()
-    # #ip.format = "svg"
-    # #ip.transparent = true
-    # ip.layerIds = [0]
-    # ip.layerOption = ImageParameters.LAYER_OPTION_SHOW
+    ### load layers ################################################################
 
     renderer = breaks_renderer
 
-    sites = new FeatureLayer layer_url+'/0',
-        # mode: ArcGISDynamicMapServiceLayer.MODE_ONDEMAND,
+    centroids = new FeatureLayer layer_url+'/0',
         mode: FeatureLayer.MODE_SNAPSHOT,
         outFields: ["*"]
-        # imageParameters: ip
 
-    sites.setRenderer(renderer)
+    centroids.setRenderer(renderer)
 
-    drawing_options = new LayerDrawingOptions()
-    drawing_options.renderer = renderer
-    opts = []
-    ### zero for sub layer zero, 1 for sublayer 1, etc. ###
-    opts[0] = drawing_options  
+    sites = new FeatureLayer layer_url+'/1',
+        mode: FeatureLayer.MODE_SNAPSHOT,
+        outFields: ["*"]
 
-    drawing_options = new LayerDrawingOptions()
-    drawing_options.renderer = line_renderer
-    opts[1] = drawing_options  
+    sites.setRenderer(line_renderer)
 
-    # sites.setLayerDrawingOptions(opts)
-            
-    map.addLayers [sites]
+    layers_list = [sites, centroids]
+    map.addLayers layers_list
 
     ### connect signals ############################################################
 
@@ -561,6 +591,7 @@ require([
         map.graphics.clear()
         
     registry.byId("select-rect").on "click", -> select('rectangle')
+    registry.byId("select-only").on "click", -> selected_only()
 
     map.on 'load', (evt) ->
         m = new Measurement map: evt.map, 'measurement'

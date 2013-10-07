@@ -88,7 +88,7 @@
     /* setup misc
     */
 
-    var basemapGallery, breaks_renderer, centroids, colors, i, layer_list_setup_feature_layer, layer_list_setup_map_layer, layers_list, line_renderer, link, locate, locator, perimeter, popup, range, renderer, select, selected_only, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, _i, _j, _len, _ref;
+    var basemapGallery, breaks_renderer, centroids, colors, do_legend, i, layer_list_setup_feature_layer, layer_list_setup_map_layer, layers_list, line_renderer, link, locate, locator, perimeter, popup, range, renderer, renderers, select, selected_only, set_legend, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, year_renderer, _i, _j, _k, _len, _len1, _ref;
     parser.parse();
     popup = new Popup({
       titleInBody: false
@@ -198,6 +198,16 @@
         return dojo_query("#select-only")[0].innerHTML = "Show all";
       }
     };
+    /* set_legend
+    */
+
+    set_legend = function(which) {
+      var renderer;
+      renderer = renderers[which];
+      centroids.setRenderer(renderer);
+      centroids.hide();
+      return centroids.show();
+    };
     /* create map
     */
 
@@ -227,7 +237,7 @@
     /* legend
     */
 
-    map.on("layers-add-result", function(evt) {
+    do_legend = function(evt) {
       var layerInfo, legendDijit;
       layerInfo = arrayUtils.map(evt.layers, function(layer, index) {
         return {
@@ -243,7 +253,8 @@
         legendDijit.startup();
         return map.legend = legendDijit;
       }
-    });
+    };
+    map.on("layers-add-result", do_legend);
     /* set up layer picker - map layer version
     */
 
@@ -443,24 +454,52 @@
     /* UniqueValueRenderer
     */
 
-    unique_renderer = new UniqueValueRenderer(star, 'geomorph');
+    unique_renderer = new UniqueValueRenderer(null, 'geomorph');
     things = [
       {
         value: 'riverine',
-        color: [0, 255, 0]
+        color: [0, 200, 0]
       }, {
         value: 'barrier (protected)',
-        color: [255, 0, 0]
+        color: [0, 0, 255]
       }, {
         value: 'lacustrine (coastal)',
-        color: [0, 0, 255]
+        color: [255, 127, 0]
       }
     ];
     for (_i = 0, _len = things.length; _i < _len; _i++) {
       thing = things[_i];
       unique_renderer.addValue({
         value: thing.value,
-        symbol: new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color(thing.color), 2), new Color([255, 128, 128])),
+        symbol: new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, null, new Color(thing.color)),
+        label: thing.value,
+        description: thing.value
+      });
+    }
+    year_renderer = new UniqueValueRenderer(null, 'year');
+    things = [
+      {
+        value: '2011',
+        color: []
+      }, {
+        value: '2011',
+        color: []
+      }, {
+        value: '2011',
+        color: []
+      }, {
+        value: '2011',
+        color: []
+      }, {
+        value: '2011',
+        color: []
+      }
+    ];
+    for (_j = 0, _len1 = things.length; _j < _len1; _j++) {
+      thing = things[_j];
+      year_renderer.addValue({
+        value: thing.value,
+        symbol: new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, null, new Color(thing.color)),
         label: thing.value,
         description: thing.value
       });
@@ -473,7 +512,7 @@
     range = [-92, -74];
     steps = colors.length;
     step = (range[1] - range[0]) / steps;
-    for (i = _j = 0, _ref = steps - 1; 0 <= _ref ? _j <= _ref : _j >= _ref; i = 0 <= _ref ? ++_j : --_j) {
+    for (i = _k = 0, _ref = steps - 1; 0 <= _ref ? _k <= _ref : _k >= _ref; i = 0 <= _ref ? ++_k : --_k) {
       if (i === 0) {
         start = -Infinity;
         stop = range[0] + (i + 1) * step;
@@ -503,6 +542,10 @@
     sites.setRenderer(line_renderer);
     layers_list = [sites, centroids];
     map.addLayers(layers_list);
+    renderers = {
+      geomorph: unique_renderer
+    };
+    set_legend('geomorph');
     /* connect signals
     */
 
@@ -518,8 +561,9 @@
     registry.byId("select-rect").on("click", function() {
       return select('rectangle');
     });
-    registry.byId("select-only").on("click", function() {
-      return selected_only();
+    registry.byId("select-only").on("click", selected_only);
+    registry.byId("legend-pick").on("change", function() {
+      return set_legend(registry.byId("legend-pick").get('value'));
     });
     map.on('load', function(evt) {
       var m;

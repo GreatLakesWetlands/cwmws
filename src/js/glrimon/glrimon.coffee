@@ -287,6 +287,20 @@ require([
             console.log 
             centroids.setDefinitionExpression definition
             dojo_query("#select-only")[0].innerHTML = "Show all"
+    ### set_legend #################################################################
+
+    set_legend = (which) ->
+
+        renderer = renderers[which]
+
+        #for layer in layers_list
+        #    map.removeLayer(layer)
+        centroids.setRenderer(renderer)
+        #for layer in layers_list
+        #    map.addLayer(layer)
+        
+        centroids.hide()
+        centroids.show()
     ### create map #################################################################
 
     map = new Map "map",
@@ -315,7 +329,8 @@ require([
 
     ### legend #####################################################################
 
-    map.on "layers-add-result", (evt) ->
+    do_legend = (evt) ->
+
         layerInfo = arrayUtils.map evt.layers, (layer, index) ->
             layer:layer.layer
             title:layer.layer.name
@@ -329,6 +344,7 @@ require([
             legendDijit.startup()
             map.legend = legendDijit
 
+    map.on "layers-add-result", do_legend
     ### set up layer picker - map layer version ####################################
 
     ###
@@ -505,17 +521,16 @@ require([
 
     ### UniqueValueRenderer ########################################################
 
-    unique_renderer = new UniqueValueRenderer star, 'geomorph'
+    unique_renderer = new UniqueValueRenderer null, 'geomorph'
 
     things =[
-        value: 'riverine'
-        color: [0,255,0]
+        value: 'riverine', color: [0,200,0]
       ,
         value: 'barrier (protected)'
-        color: [255,0,0]
+        color: [0,0,255]
       ,
         value: 'lacustrine (coastal)'
-        color: [0,0,255]
+        color: [255,127,0]
     ]
 
     for thing in things                
@@ -523,9 +538,38 @@ require([
             value: thing.value
             symbol:
                 new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
-                    new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-                        new Color(thing.color), 2,
-                    new Color([255,128,128])
+                    null # new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+                    #    new Color(thing.color), 2,
+                    new Color(thing.color)
+            label: thing.value
+            description: thing.value
+
+    year_renderer = new UniqueValueRenderer null, 'year'
+
+    things =[
+        value: '2011', color: []
+      ,
+        value: '2011'
+        color: []
+      ,
+        value: '2011'
+        color: []
+      ,
+        value: '2011'
+        color: []
+      ,
+        value: '2011'
+        color: []
+    ]
+
+    for thing in things                
+        year_renderer.addValue 
+            value: thing.value
+            symbol:
+                new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
+                    null # new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+                    #    new Color(thing.color), 2,
+                    new Color(thing.color)
             label: thing.value
             description: thing.value
 
@@ -581,6 +625,10 @@ require([
     layers_list = [sites, centroids]
     map.addLayers layers_list
 
+    renderers = 
+        geomorph: unique_renderer
+
+    set_legend 'geomorph'
     ### connect signals ############################################################
 
     map.query_click = map.on 'click', querySites
@@ -592,8 +640,11 @@ require([
         dom.byId('select_results').innerHTML = "No sites selected."
         map.graphics.clear()
         
-    registry.byId("select-rect").on "click", -> select('rectangle')
-    registry.byId("select-only").on "click", -> selected_only()
+    registry.byId("select-rect").on "click", -> select 'rectangle' 
+    registry.byId("select-only").on "click", selected_only
+
+    registry.byId("legend-pick").on "change", ->
+        set_legend registry.byId("legend-pick").get('value')
 
     map.on 'load', (evt) ->
         m = new Measurement map: evt.map, 'measurement'

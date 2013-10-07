@@ -8,7 +8,7 @@ map = {}
 
 window.selected_sites = []
 
-layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest001/MapServer"
+layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest002/MapServer"
 
 ### querySites #################################################################
 
@@ -180,7 +180,7 @@ require([
 
     perimeter = new SimpleFillSymbol SimpleFillSymbol.STYLE_NULL,
         new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-            new Color([255,0,0]), 2
+            new Color([0,0,255]), 1
         new Color([0,0,0])
 
     ### show_species ###############################################################
@@ -301,6 +301,51 @@ require([
         
         centroids.hide()
         centroids.show()
+    ### show_only ##################################################################
+
+    show_only = ->
+
+        q = new esri.tasks.Query()
+        q.returnGeometry = false
+        q.outFields = ["site"]
+        combine = if registry.byId("spp_any").get('checked') then ' or' else ' and'
+        current = ''
+        where = ''
+        for taxa in ['amphibian', 'bird', 'fish', 'invertebrate', 'plant']
+            if registry.byId("i_"+taxa).get('checked')
+                where += "#{current} taxa like '*#{taxa}*'"
+                current = combine
+        console.log(where)
+        
+        q.where = where
+
+        qt = new esri.tasks.QueryTask layer_url + '/2'
+        def = qt.execute q
+        def.addCallback (result) ->
+
+            taxa = ''
+            div = domConstruct.create "div"
+            
+            for feat in result.features
+                if feat.attributes.taxa != taxa
+                    taxa = feat.attributes.taxa
+                    h2 = domConstruct.create "h2"
+                    h2.innerHTML = taxa
+                    domConstruct.place h2, div, 'last'
+                name = domConstruct.create "div"
+                name.innerHTML = feat.attributes.name
+                domConstruct.place name, div, 'last'
+                
+            if taxa == ''
+                note = domConstruct.create "p"
+                note.innerHTML = "No species reported yet."
+                domConstruct.place note, div, 'last'
+            
+            ans = new Dialog
+                title: "Species for site #{site}"
+                content: div
+            ans.show()
+
     ### create map #################################################################
 
     map = new Map "map",
@@ -545,24 +590,24 @@ require([
     year_renderer = new UniqueValueRenderer null, 'year'
 
     things =[
-        value: 2011, color: [255, 127, 28]
+        value: '2011', color: [255, 127, 28], shape: SimpleMarkerSymbol.STYLE_CIRCLE
       ,
-        value: 2012, color: [204, 101, 73]
+        value: '2012', color: [204, 101, 73], shape: SimpleMarkerSymbol.STYLE_SQUARE
       ,
-        value: 2013, color: [153, 76, 119]
+        value: '2013', color: [153, 76, 119], shape: SimpleMarkerSymbol.STYLE_DIAMOND
       ,
-        value: 2014, color: [102, 51, 164]
+        value: '2014', color: [102, 51, 164], shape: SimpleMarkerSymbol.STYLE_CROSS
       ,
-        value: 2015, color: [52, 26, 209]
+        value: '2015', color: [52, 26, 209], shape: SimpleMarkerSymbol.STYLE_X
     ]
 
     for thing in things                
         year_renderer.addValue 
             value: thing.value
             symbol:
-                new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
-                    null # new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-                    #    new Color(thing.color), 2,
+                new SimpleMarkerSymbol thing.shape, 8,
+                    new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+                        new Color(thing.color), 2,
                     new Color(thing.color)
             label: thing.value
             description: thing.value
@@ -621,6 +666,7 @@ require([
 
     renderers = 
         geomorph: unique_renderer
+        samp_year: year_renderer
 
     set_legend 'geomorph'
     ### connect signals ############################################################
@@ -634,6 +680,8 @@ require([
         dom.byId('select_results').innerHTML = "No sites selected."
         map.graphics.clear()
         
+    registry.byId("show-only").on "click", show_only
+
     registry.byId("select-rect").on "click", -> select 'rectangle' 
     registry.byId("select-only").on "click", selected_only
 

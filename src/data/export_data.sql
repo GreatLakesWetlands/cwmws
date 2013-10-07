@@ -1,4 +1,54 @@
 
+-- Species list
+
+drop view if exists glrimon_misc.cwm_spp_export;
+create view glrimon_misc.cwm_spp_export as
+
+select site, 'plant' as taxa, v_taxa.name
+     from glrimon.v_taxa
+          join glrimon.v_observation using (taxa)
+          join glrimon.v_point using (point)
+          join glrimon.v_transect using (transect)
+          join glrimon.v_sampling using (sampling)
+    where qa_done
+   union
+   select site, 'bird', common
+     from glrimon.site
+          join glrimon.b_point using (site)
+          join glrimon.b_observation using (point)
+          join glrimon.b_taxa using (taxa)
+    where qa_done
+   union
+   select site, 'amphibian', common
+     from glrimon.site
+          join glrimon.a_point using (site)
+          join glrimon.a_observation using (point)
+          join glrimon.a_taxa using (taxa)
+    where qa_done
+   union
+   select site, 'fish', common
+     from glrimon.site
+          join glrimon.Fi_sampling using (site)
+          join glrimon.Fi_sampling_zone using (sampling)
+          join glrimon.Fi_zone_fyke using (sampling_zone)
+          join glrimon.F_fish_total using (zone_fyke)
+          join glrimon.F_taxa using (taxa)
+    where Fi_zone_fyke.qa_done
+   union
+   select site, 'invertebrate', taxa
+     from glrimon.Site
+          join glrimon.Fi_sampling using (site)
+          join glrimon.Fi_sampling_zone using (sampling)
+          join glrimon.Fi_zone_invert using (sampling_zone)
+          join glrimon.Fi_lab_invert using (zone_invert)
+          join glrimon.Fi_bug_obs using (lab_invert)
+          join glrimon.F_invert_taxa using (invert_taxa)
+    where Fi_zone_invert.qa_done
+;
+
+
+-- site data
+
 drop view if exists glrimon_misc.cwm_site_export;
 create view glrimon_misc.cwm_site_export as
 
@@ -61,6 +111,12 @@ sample_year as (
       where workflow.data_level >= 0 and year > date_part('year', current_date)
 
     ) x group by site
+), 
+
+spp_data as (
+    select site, trim(sum(taxa||','), ',') as taxa from (
+        select distinct site, taxa from glrimon_misc.cwm_spp_export
+    ) x group by site
 )
 
 select site, 
@@ -69,18 +125,21 @@ select site,
        veg_ibi.score as veg_ibi,
        fish_ibi.score as fish_ibi,
        invert_ibi.score as invert_ibi,
-       st_y(st_centroid(simp_geom)) as lat,
-       st_x(st_centroid(simp_geom)) as lon,
+       -- centroid of bbox to match ArcMap centroids
+       st_y(st_centroid(Box2D(simp_geom))) as lat,
+       st_x(st_centroid(Box2D(simp_geom))) as lon,
        (select substring(tagging_tag.name from 8)
           from glrimon.tagging_taggeditem, glrimon.tagging_tag
          where tag_id = tagging_tag.id and object_id = site and 
-               tagging_tag.name ~ 'class: ') as geomorph
+               tagging_tag.name ~ 'class: ') as geomorph,
+       spp_data.taxa
     
   from glrimon.site
        join sample_year using (site)
        left join veg_ibi using (site)
        left join fish_ibi using (site)
        left join invert_ibi using (site)
+       left join spp_data using (site)
 -- -- filtering by join to sample_year
 --  where exists (
 --        select 1 
@@ -94,50 +153,3 @@ select site,
 ;
 
 
-SQL="select site, 'plant' as taxa, v_taxa.name
-     from glrimon.v_taxa
-          join glrimon.v_observation using (taxa)
-          join glrimon.v_point using (point)
-          join glrimon.v_transect using (transect)
-          join glrimon.v_sampling using (sampling)
-          join glrimon.site using (site)
-    where $USE_SITE and qa_done
-   union
-   select site, 'bird', common
-     from glrimon.site
-          join glrimon.b_point using (site)
-          join glrimon.b_observation using (point)
-          join glrimon.b_taxa using (taxa)
-    where $USE_SITE and qa_done
-   union
-   select site, 'amphibian', common
-     from glrimon.site
-          join glrimon.a_point using (site)
-          join glrimon.a_observation using (point)
-          join glrimon.a_taxa using (taxa)
-    where $USE_SITE and qa_done
-   union
-   select site, 'fish', common
-     from glrimon.site
-          join glrimon.Fi_sampling using (site)
-          join glrimon.Fi_sampling_zone using (sampling)
-          join glrimon.Fi_zone_fyke using (sampling_zone)
-          join glrimon.F_fish_total using (zone_fyke)
-          join glrimon.F_taxa using (taxa)
-    where $USE_SITE and Fi_zone_fyke.qa_done
-   union
-   select site, 'invertebrate', taxa
-     from glrimon.Site
-          join glrimon.Fi_sampling using (site)
-          join glrimon.Fi_sampling_zone using (sampling)
-          join glrimon.Fi_zone_invert using (sampling_zone)
-          join glrimon.Fi_lab_invert using (zone_invert)
-          join glrimon.Fi_bug_obs using (lab_invert)
-          join glrimon.F_invert_taxa using (invert_taxa)
-    where $USE_SITE and Fi_zone_invert.qa_done
-  "
-  
-echo -e "\n-- species\n\n$SQL\n" >>"$OUT_DIR/00README.TXT"
-
-ogr2ogr -f 'ESRI Shapefile' "$OUT_DIR/species.dbf" "$CONSPEC" \
-  -lco SHPT=NULL -sql "$SQL"

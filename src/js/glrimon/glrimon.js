@@ -479,20 +479,20 @@
     year_renderer = new UniqueValueRenderer(null, 'year');
     things = [
       {
-        value: '2011',
-        color: []
+        value: 2011,
+        color: [255, 127, 28]
       }, {
-        value: '2011',
-        color: []
+        value: 2012,
+        color: [204, 101, 73]
       }, {
-        value: '2011',
-        color: []
+        value: 2013,
+        color: [153, 76, 119]
       }, {
-        value: '2011',
-        color: []
+        value: 2014,
+        color: [102, 51, 164]
       }, {
-        value: '2011',
-        color: []
+        value: 2015,
+        color: [52, 26, 209]
       }
     ];
     for (_j = 0, _len1 = things.length; _j < _len1; _j++) {

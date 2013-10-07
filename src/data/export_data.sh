@@ -36,22 +36,24 @@ SQL="select site, 'plant' as taxa, v_taxa.name
           join glrimon.v_point using (point)
           join glrimon.v_transect using (transect)
           join glrimon.v_sampling using (sampling)
-          join glrimon.site using (site)
-    where $USE_SITE and qa_done
+          join glrimon_misc.cwm_site_export using (site)
+    where qa_done
    union
    select site, 'bird', common
      from glrimon.site
           join glrimon.b_point using (site)
           join glrimon.b_observation using (point)
           join glrimon.b_taxa using (taxa)
-    where $USE_SITE and qa_done
+          join glrimon_misc.cwm_site_export using (site)
+    where qa_done
    union
    select site, 'amphibian', common
      from glrimon.site
           join glrimon.a_point using (site)
           join glrimon.a_observation using (point)
           join glrimon.a_taxa using (taxa)
-    where $USE_SITE and qa_done
+          join glrimon_misc.cwm_site_export using (site)
+    where qa_done
    union
    select site, 'fish', common
      from glrimon.site
@@ -60,7 +62,8 @@ SQL="select site, 'plant' as taxa, v_taxa.name
           join glrimon.Fi_zone_fyke using (sampling_zone)
           join glrimon.F_fish_total using (zone_fyke)
           join glrimon.F_taxa using (taxa)
-    where $USE_SITE and Fi_zone_fyke.qa_done
+          join glrimon_misc.cwm_site_export using (site)
+    where Fi_zone_fyke.qa_done
    union
    select site, 'invertebrate', taxa
      from glrimon.Site
@@ -70,7 +73,8 @@ SQL="select site, 'plant' as taxa, v_taxa.name
           join glrimon.Fi_lab_invert using (zone_invert)
           join glrimon.Fi_bug_obs using (lab_invert)
           join glrimon.F_invert_taxa using (invert_taxa)
-    where $USE_SITE and Fi_zone_invert.qa_done
+          join glrimon_misc.cwm_site_export using (site)
+    where Fi_zone_invert.qa_done
   "
   
 echo -e "\n-- species\n\n$SQL\n" >>"$OUT_DIR/00README.TXT"

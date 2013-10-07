@@ -75,16 +75,28 @@
                         Clear</button>
                     <p id='select_results'>No sites selected.</p></div>
                     
+                    <div>Color sites by:
+                    <select id='legend_var' data-dojo-type="dijit/form/Select">
+                        <option>---select---</option>
+                        <option value='bird_ibi'>Bird IBI</option>
+                        <option value='fish_ibi'>Fish IBI</option>
+                        <option value='invert_ibi'>Invert. IBI</option>
+                        <option value='veg_ibi'>Veg. IBI</option>
+                        <option value='samp_year'>Sampling year</option>
+                        <option value='geomorph'>Geomorph</option>
+                    </select>
+                    </div>                        
+                    
                     <div>
-                    <div><button>Show</button> only sites with</div>
-                    <div><input type='radio'/>any of
-                         <input type='radio'/>all of
+                    <div><button id="show-only"  data-dojo-type="dijit/form/Button">Show</button> only sites with</div>
+                    <div><input type='radio' data-dojo-type="dijit/form/RadioButton"/>any of
+                         <input type='radio' data-dojo-type="dijit/form/RadioButton"/>all of
                     </div>
-                    <div><input type='checkbox'/>amphib. data</div>
-                    <div><input type='checkbox'/>bird data</div>
-                    <div><input type='checkbox'/>fish data</div>
-                    <div><input type='checkbox'/>invert. data</div>
-                    <div><input type='checkbox'/>veg. data</div>
+                    <div><input type='checkbox' data-dojo-type="dijit/form/CheckBox"/>amphib. data</div>
+                    <div><input type='checkbox' data-dojo-type="dijit/form/CheckBox"/>bird data</div>
+                    <div><input type='checkbox' data-dojo-type="dijit/form/CheckBox"/>fish data</div>
+                    <div><input type='checkbox' data-dojo-type="dijit/form/CheckBox"/>invert. data</div>
+                    <div><input type='checkbox' data-dojo-type="dijit/form/CheckBox"/>veg. data</div>
                     </div>
             </div>
 

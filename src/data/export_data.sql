@@ -26,10 +26,46 @@ select distinct on (site) table_id as site, score
        join glrimon.fi_ibi_attr using (ibi_attr)
  where table_name = 'Fi_sampling' and
        fi_ibi_attr.name = 'Site invert. IBI total score'
+),
+
+sample_year as (
+
+    select site, min(year) as year from (
+           -- veg.
+    select site, year from glrimon.v_sampling where qa_done
+    union  -- fish
+    select site, date_part('year', date_set)
+      from glrimon.f_fish_total
+           join glrimon.fi_zone_fyke using (zone_fyke)
+           join glrimon.fi_sampling_zone using (sampling_zone)
+           join glrimon.fi_sampling on (fi_sampling_zone.sampling=fi_sampling.sampling)
+     where fi_zone_fyke.qa_done
+    union  -- invert
+    select site, date_part('year', fi_zone_invert.date)
+      from glrimon.fi_bug_obs
+           join glrimon.fi_lab_invert using (lab_invert)
+           join glrimon.fi_zone_invert using (zone_invert)
+           join glrimon.fi_sampling_zone using (sampling_zone)
+           join glrimon.fi_sampling on (fi_sampling_zone.sampling=fi_sampling.sampling)
+     where fi_zone_invert.qa_done
+     union  -- birds
+     select site, date_part('year', date) from glrimon.b_point where qa_done
+     union  -- amph
+     select site, date_part('year', date) from glrimon.a_point where qa_done
+     
+     union  -- to be done
+     
+     select site, year
+       from glrimon.site_status
+            join glrimon.workflow using (workflow)
+      where workflow.data_level >= 0 and year > date_part('year', current_date)
+
+    ) x group by site
 )
 
 select site, 
        name, 
+       year,
        veg_ibi.score as veg_ibi,
        fish_ibi.score as fish_ibi,
        invert_ibi.score as invert_ibi,
@@ -41,17 +77,19 @@ select site,
                tagging_tag.name ~ 'class: ') as geomorph
     
   from glrimon.site
+       join sample_year using (site)
        left join veg_ibi using (site)
        left join fish_ibi using (site)
        left join invert_ibi using (site)
- where exists (
-       select 1 
-         from glrimon.tagging_taggeditem
-              join glrimon.tagging_tag on (tagging_taggeditem.tag_id =
-                tagging_tag.id)
-        where tagging_taggeditem.object_id = site.site and
-              tagging_tag.name ~ 'in-year: '
-       )
+-- -- filtering by join to sample_year
+--  where exists (
+--        select 1 
+--          from glrimon.tagging_taggeditem
+--               join glrimon.tagging_tag on (tagging_taggeditem.tag_id =
+--                 tagging_tag.id)
+--         where tagging_taggeditem.object_id = site.site and
+--               tagging_tag.name ~ 'in-year: '
+--        )
  order by site
 ;
 

@@ -9,7 +9,7 @@
 
 
 (function() {
-  var layer_url, map, querySites,
+  var boundary_layer, centroid_layer, layer_url, map, querySites, species_table,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   map = {};
@@ -17,6 +17,12 @@
   window.selected_sites = [];
 
   layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest002/MapServer";
+
+  centroid_layer = "/0";
+
+  boundary_layer = "/1";
+
+  species_table = "/2";
 
   /* querySites
   */
@@ -68,7 +74,7 @@
         }
       ]
     });
-    qt = new esri.tasks.QueryTask(layer_url + '/1');
+    qt = new esri.tasks.QueryTask(layer_url + boundary_layer);
     def = qt.execute(q);
     def.addCallback(function(result) {
       return dojo.map(result.features, function(f) {
@@ -106,7 +112,7 @@
       q.returnGeometry = true;
       q.outFields = ["site", "taxa", "name"];
       q.where = "site = " + site;
-      qt = new esri.tasks.QueryTask(layer_url + '/2');
+      qt = new esri.tasks.QueryTask(layer_url + species_table);
       def = qt.execute(q);
       return def.addCallback(function(result) {
         var ans, div, feat, h2, name, note, taxa, _i, _len, _ref;
@@ -155,7 +161,7 @@
         q.geometry = evt.geometry;
         q.spatialRelationship = Query.SPATIAL_REL_INTERSECTS;
         map.enableMapNavigation();
-        qt = new esri.tasks.QueryTask(layer_url + '/1');
+        qt = new esri.tasks.QueryTask(layer_url + boundary_layer);
         def = qt.execute(q);
         return def.addCallback(function(result) {
           var i, locationGraphic, symbol, text, _i, _len, _ref, _ref1;
@@ -229,35 +235,17 @@
       }
       console.log(where);
       q.where = where;
-      qt = new esri.tasks.QueryTask(layer_url + '/2');
+      qt = new esri.tasks.QueryTask(layer_url + centroid_layer);
       def = qt.execute(q);
       return def.addCallback(function(result) {
-        var ans, div, feat, h2, name, note, _j, _len1, _ref1;
-        taxa = '';
-        div = domConstruct.create("div");
+        var feat, _j, _len1, _ref1, _results;
         _ref1 = result.features;
+        _results = [];
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           feat = _ref1[_j];
-          if (feat.attributes.taxa !== taxa) {
-            taxa = feat.attributes.taxa;
-            h2 = domConstruct.create("h2");
-            h2.innerHTML = taxa;
-            domConstruct.place(h2, div, 'last');
-          }
-          name = domConstruct.create("div");
-          name.innerHTML = feat.attributes.name;
-          domConstruct.place(name, div, 'last');
+          _results.push(console.log(feat.attributes.site));
         }
-        if (taxa === '') {
-          note = domConstruct.create("p");
-          note.innerHTML = "No species reported yet.";
-          domConstruct.place(note, div, 'last');
-        }
-        ans = new Dialog({
-          title: "Species for site " + site,
-          content: div
-        });
-        return ans.show();
+        return _results;
       });
     };
     /* create map
@@ -418,7 +406,7 @@
         q.returnGeometry = true;
         q.outFields = ["site", "name", "geomorph", 'lat', 'lon'];
         q.where = "site = " + address;
-        qt = new esri.tasks.QueryTask(layer_url + '/1');
+        qt = new esri.tasks.QueryTask(layer_url + boundary_layer);
         def = qt.execute(q);
         return def.addCallback(function(result) {
           if (result.features.length > 0) {
@@ -587,12 +575,12 @@
     */
 
     renderer = breaks_renderer;
-    centroids = new FeatureLayer(layer_url + '/0', {
+    centroids = new FeatureLayer(layer_url + centroid_layer, {
       mode: FeatureLayer.MODE_SNAPSHOT,
       outFields: ["*"]
     });
     centroids.setRenderer(renderer);
-    sites = new FeatureLayer(layer_url + '/1', {
+    sites = new FeatureLayer(layer_url + boundary_layer, {
       mode: FeatureLayer.MODE_SNAPSHOT,
       outFields: ["*"]
     });

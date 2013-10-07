@@ -10,6 +10,9 @@ window.selected_sites = []
 
 layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest002/MapServer"
 
+centroid_layer = "/0"
+boundary_layer = "/1"
+species_table = "/2"
 ### querySites #################################################################
 
 querySites = (e) ->
@@ -36,7 +39,7 @@ querySites = (e) ->
             { fieldName: "lon", visible: true, label: "lon: ", format: places: 6 },
         ]
 
-    qt = new esri.tasks.QueryTask layer_url + '/1'
+    qt = new esri.tasks.QueryTask layer_url + boundary_layer
     def = qt.execute q
     def.addCallback (result) ->
 
@@ -195,7 +198,7 @@ require([
         q.outFields = ["site", "taxa", "name"]
         q.where = "site = #{site}"
 
-        qt = new esri.tasks.QueryTask layer_url + '/2'
+        qt = new esri.tasks.QueryTask layer_url + species_table
         def = qt.execute q
         def.addCallback (result) ->
 
@@ -240,7 +243,7 @@ require([
             
             map.enableMapNavigation()
         
-            qt = new esri.tasks.QueryTask layer_url + '/1'
+            qt = new esri.tasks.QueryTask layer_url + boundary_layer
             def = qt.execute q
             def.addCallback (result) ->
             
@@ -319,33 +322,12 @@ require([
         
         q.where = where
 
-        qt = new esri.tasks.QueryTask layer_url + '/2'
+        qt = new esri.tasks.QueryTask layer_url + centroid_layer
         def = qt.execute q
         def.addCallback (result) ->
 
-            taxa = ''
-            div = domConstruct.create "div"
-            
             for feat in result.features
-                if feat.attributes.taxa != taxa
-                    taxa = feat.attributes.taxa
-                    h2 = domConstruct.create "h2"
-                    h2.innerHTML = taxa
-                    domConstruct.place h2, div, 'last'
-                name = domConstruct.create "div"
-                name.innerHTML = feat.attributes.name
-                domConstruct.place name, div, 'last'
-                
-            if taxa == ''
-                note = domConstruct.create "p"
-                note.innerHTML = "No species reported yet."
-                domConstruct.place note, div, 'last'
-            
-            ans = new Dialog
-                title: "Species for site #{site}"
-                content: div
-            ans.show()
-
+                console.log feat.attributes.site
     ### create map #################################################################
 
     map = new Map "map",
@@ -482,7 +464,7 @@ require([
             q.outFields = ["site", "name", "geomorph", 'lat', 'lon']
             q.where = "site = #{address}"
         
-            qt = new esri.tasks.QueryTask layer_url + '/1'
+            qt = new esri.tasks.QueryTask layer_url + boundary_layer
             def = qt.execute q
             def.addCallback (result) ->
                 if result.features.length > 0
@@ -649,13 +631,13 @@ require([
 
     renderer = breaks_renderer
 
-    centroids = new FeatureLayer layer_url+'/0',
+    centroids = new FeatureLayer layer_url+centroid_layer,
         mode: FeatureLayer.MODE_SNAPSHOT,
         outFields: ["*"]
 
     centroids.setRenderer(renderer)
 
-    sites = new FeatureLayer layer_url+'/1',
+    sites = new FeatureLayer layer_url+boundary_layer,
         mode: FeatureLayer.MODE_SNAPSHOT,
         outFields: ["*"]
 

@@ -290,6 +290,9 @@ require([
             console.log 
             centroids.setDefinitionExpression definition
             dojo_query("#select-only")[0].innerHTML = "Show all"
+
+        text = "#{window.selected_sites.length} sites selected."
+        dom.byId('select_results').innerHTML = text
     ### set_legend #################################################################
 
     set_legend = (which) ->
@@ -316,7 +319,7 @@ require([
         where = ''
         for taxa in ['amphibian', 'bird', 'fish', 'invertebrate', 'plant']
             if registry.byId("i_"+taxa).get('checked')
-                where += "#{current} taxa like '*#{taxa}*'"
+                where += "#{current} \"taxa\" like '%#{taxa}%'"
                 current = combine
         console.log(where)
         
@@ -324,10 +327,19 @@ require([
 
         qt = new esri.tasks.QueryTask layer_url + centroid_layer
         def = qt.execute q
-        def.addCallback (result) ->
-
-            for feat in result.features
-                console.log feat.attributes.site
+        def.addCallback (result) ->   
+            sites = (feature.attributes.site for feature in result.features)
+            console.log sites
+            console.log window.selected_sites
+            if window.selected_sites and window.selected_sites.length > 0
+                sites = (site for site in sites if site in window.selected_sites)
+                
+            console.log sites
+            
+            window.selected_sites = sites
+            centroids.setDefinitionExpression ""
+            selected_only()
+            
     ### create map #################################################################
 
     map = new Map "map",

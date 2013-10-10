@@ -16,6 +16,8 @@
 
   window.selected_sites = [];
 
+  window.highlighted_sites = [];
+
   layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest002/MapServer";
 
   centroid_layer = "/0";
@@ -94,7 +96,7 @@
     /* setup misc
     */
 
-    var basemapGallery, breaks_renderer, centroids, colors, do_legend, i, layer_list_setup_feature_layer, layer_list_setup_map_layer, layers_list, line_renderer, link, locate, locator, perimeter, popup, range, renderer, renderers, select, selected_only, set_legend, show_only, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, year_renderer, _i, _j, _k, _len, _len1, _ref;
+    var basemapGallery, breaks_renderer, centroids, clear_site_selection, colors, do_legend, i, layer_list_setup_feature_layer, layer_list_setup_map_layer, layers_list, line_renderer, link, locate, locator, perimeter, popup, range, renderer, renderers, select, selected_only, set_legend, show_only, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, year_renderer, _i, _j, _k, _len, _len1, _ref;
     parser.parse();
     popup = new Popup({
       titleInBody: false
@@ -164,22 +166,21 @@
         qt = new esri.tasks.QueryTask(layer_url + boundary_layer);
         def = qt.execute(q);
         return def.addCallback(function(result) {
-          var i, locationGraphic, symbol, text, _i, _len, _ref, _ref1;
+          var i, locationGraphic, symbol, text, _i, _len, _ref, _ref1, _ref2;
           symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 12, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0, 255, 255, 0.5], 0)), new Color([0, 255, 255, 1]));
           _ref = result.features;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             i = _ref[_i];
-            if (_ref1 = i.attributes.site, __indexOf.call(window.selected_sites, _ref1) < 0) {
-              window.selected_sites.push(i.attributes.site);
+            if (_ref1 = i.attributes.site, __indexOf.call(window.highlighted_sites, _ref1) < 0) {
+              window.highlighted_sites.push(i.attributes.site);
+              if (_ref2 = i.attributes.site, __indexOf.call(window.selected_sites, _ref2) < 0) {
+                window.selected_sites.push(i.attributes.site);
+              }
               locationGraphic = new Graphic(i.geometry.getExtent().getCenter(), symbol);
               map.graphics.add(locationGraphic);
             }
           }
-          if (window.selected_sites.length === result.features.length) {
-            text = "" + result.features.length + " sites selected.";
-          } else {
-            text = "" + result.features.length + " sites, total selected now " + window.selected_sites.length + ".";
-          }
+          text = "" + result.features.length + " sites.";
           return dom.byId('select_results').innerHTML = text;
         });
       });
@@ -188,23 +189,34 @@
       dom.byId('select_results').innerHTML = "Draw a rectangle on the map";
       return toolbar.activate(esri.toolbars.Draw.RECTANGLE);
     };
+    clear_site_selection = function() {
+      window.highlighted_sites = [];
+      window.selected_sites = [];
+      dom.byId('select_results').innerHTML = "No sites selected.";
+      map.graphics.clear();
+      centroids.setDefinitionExpression("");
+      return sites.setDefinitionExpression("");
+    };
     /* selected_only
     */
 
     selected_only = function() {
       var definition, text;
-      if (centroids.getDefinitionExpression()) {
+      if (centroids.getDefinitionExpression() && window.highlighted_sites.length === 0) {
         centroids.setDefinitionExpression("");
-        dojo_query("#select-only")[0].innerHTML = "Show selected only";
+        sites.setDefinitionExpression("");
       } else {
+        if (window.highlighted_sites.length !== 0) {
+          window.selected_sites = window.highlighted_sites;
+        }
         definition = "SITE in (" + (window.selected_sites.toString()) + ")";
-        console.log(definition);
-        console.log;
         centroids.setDefinitionExpression(definition);
-        dojo_query("#select-only")[0].innerHTML = "Show all";
+        sites.setDefinitionExpression(definition);
       }
       text = "" + window.selected_sites.length + " sites selected.";
-      return dom.byId('select_results').innerHTML = text;
+      dom.byId('select_results').innerHTML = text;
+      map.graphics.clear();
+      return window.highlighted_sites = [];
     };
     /* set_legend
     */
@@ -623,16 +635,12 @@
     basemapGallery.on('selection-change', function() {
       return registry.byId("basemap-gallery-pane").toggle();
     });
-    registry.byId("select-clear").on("click", function() {
-      window.selected_sites = [];
-      dom.byId('select_results').innerHTML = "No sites selected.";
-      return map.graphics.clear();
-    });
-    registry.byId("show-only").on("click", show_only);
+    registry.byId("select-clear").on("click", clear_site_selection);
     registry.byId("select-rect").on("click", function() {
       return select('rectangle');
     });
     registry.byId("select-only").on("click", selected_only);
+    registry.byId("show-only").on("click", show_only);
     registry.byId("legend-pick").on("change", function() {
       return set_legend(registry.byId("legend-pick").get('value'));
     });

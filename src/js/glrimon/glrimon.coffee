@@ -7,6 +7,7 @@
 map = {}
 
 window.selected_sites = []
+window.highlighted_sites = []
 
 layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest002/MapServer"
 
@@ -258,41 +259,51 @@ require([
                     ), new Color [0, 255, 255, 1])      
             
                 for i in result.features
-                    if i.attributes.site not in window.selected_sites
-                        window.selected_sites.push i.attributes.site
+                
+                    if i.attributes.site not in window.highlighted_sites
+                        window.highlighted_sites.push i.attributes.site
+                        if i.attributes.site not in window.selected_sites
+                            window.selected_sites.push i.attributes.site
                         locationGraphic = new Graphic i.geometry.getExtent().getCenter(),
                             symbol
                         map.graphics.add locationGraphic
 
-                if window.selected_sites.length == result.features.length
-                    text = "#{result.features.length} sites selected."
-                else
-                    text = "#{result.features.length} sites, total selected now #{window.selected_sites.length}."
+                text = "#{result.features.length} sites."
                 dom.byId('select_results').innerHTML = text
                 
-            
         map.disableMapNavigation()
         esri.bundle.toolbars.draw.addShape = "Click and drag from corner to corner"
         dom.byId('select_results').innerHTML = 
                     "Draw a rectangle on the map"
         toolbar.activate esri.toolbars.Draw.RECTANGLE
 
+    clear_site_selection = ->
+        window.highlighted_sites = []
+        window.selected_sites = []
+        dom.byId('select_results').innerHTML = "No sites selected."
+        map.graphics.clear()
+        centroids.setDefinitionExpression ""
+        sites.setDefinitionExpression ""
     ### selected_only ##############################################################
 
     selected_only = ->
 
-        if centroids.getDefinitionExpression()
-            centroids.setDefinitionExpression ""
-            dojo_query("#select-only")[0].innerHTML = "Show selected only"
+        if (centroids.getDefinitionExpression() and 
+            window.highlighted_sites.length == 0)
+                centroids.setDefinitionExpression ""
+                sites.setDefinitionExpression ""
         else
+            if window.highlighted_sites.length != 0
+                window.selected_sites = window.highlighted_sites
             definition = "SITE in (#{window.selected_sites.toString()})"
-            console.log definition 
-            console.log 
             centroids.setDefinitionExpression definition
-            dojo_query("#select-only")[0].innerHTML = "Show all"
+            sites.setDefinitionExpression definition
 
         text = "#{window.selected_sites.length} sites selected."
         dom.byId('select_results').innerHTML = text
+
+        map.graphics.clear()
+        window.highlighted_sites = []
     ### set_legend #################################################################
 
     set_legend = (which) ->
@@ -669,15 +680,11 @@ require([
     basemapGallery.on 'selection-change', -> 
         registry.byId("basemap-gallery-pane").toggle()
 
-    registry.byId("select-clear").on "click", ->
-        window.selected_sites = []
-        dom.byId('select_results').innerHTML = "No sites selected."
-        map.graphics.clear()
-        
-    registry.byId("show-only").on "click", show_only
-
+    registry.byId("select-clear").on "click", clear_site_selection
     registry.byId("select-rect").on "click", -> select 'rectangle' 
     registry.byId("select-only").on "click", selected_only
+
+    registry.byId("show-only").on "click", show_only
 
     registry.byId("legend-pick").on "change", ->
         set_legend registry.byId("legend-pick").get('value')

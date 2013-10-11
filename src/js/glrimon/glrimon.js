@@ -9,7 +9,7 @@
 
 
 (function() {
-  var boundary_layer, centroid_layer, layer_url, map, querySites, species_table,
+  var boundary_layer, centroid_layer, layer_url, map, no_definition_query, querySites, species_table,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   map = {};
@@ -25,6 +25,8 @@
   boundary_layer = "/1";
 
   species_table = "/2";
+
+  no_definition_query = "1 = 1";
 
   /* querySites
   */
@@ -194,17 +196,17 @@
       window.selected_sites = [];
       dom.byId('select_results').innerHTML = "No sites selected.";
       map.graphics.clear();
-      centroids.setDefinitionExpression("");
-      return sites.setDefinitionExpression("");
+      centroids.setDefinitionExpression(no_definition_query);
+      return sites.setDefinitionExpression(no_definition_query);
     };
     /* selected_only
     */
 
     selected_only = function() {
       var definition, text;
-      if (centroids.getDefinitionExpression() && window.highlighted_sites.length === 0) {
-        centroids.setDefinitionExpression("");
-        sites.setDefinitionExpression("");
+      if (centroids.getDefinitionExpression() && centroids.getDefinitionExpression() !== no_definition_query && window.highlighted_sites.length === 0) {
+        centroids.setDefinitionExpression(no_definition_query);
+        sites.setDefinitionExpression(no_definition_query);
       } else {
         if (window.highlighted_sites.length !== 0) {
           window.selected_sites = window.highlighted_sites;
@@ -280,7 +282,8 @@
         }
         console.log(sites);
         window.selected_sites = sites;
-        centroids.setDefinitionExpression("");
+        centroids.setDefinitionExpression(no_definition_query);
+        sites.setDefinitionExpression(no_definition_query);
         return selected_only();
       });
     };
@@ -621,6 +624,8 @@
       outFields: ["*"]
     });
     sites.setRenderer(line_renderer);
+    centroids.setDefinitionExpression(no_definition_query);
+    sites.setDefinitionExpression(no_definition_query);
     layers_list = [sites, centroids];
     map.addLayers(layers_list);
     renderers = {

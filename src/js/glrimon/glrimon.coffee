@@ -14,6 +14,11 @@ layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest00
 centroid_layer = "/0"
 boundary_layer = "/1"
 species_table = "/2"
+
+no_definition_query = "1 = 1"
+# getting "Origin <whatever> is not allowed by Access-Control-Allow-Origin."
+# errors, seems to go away if the definition query is set to this instead
+# of ""?
 ### querySites #################################################################
 
 querySites = (e) ->
@@ -282,16 +287,17 @@ require([
         window.selected_sites = []
         dom.byId('select_results').innerHTML = "No sites selected."
         map.graphics.clear()
-        centroids.setDefinitionExpression ""
-        sites.setDefinitionExpression ""
+        centroids.setDefinitionExpression no_definition_query
+        sites.setDefinitionExpression no_definition_query
     ### selected_only ##############################################################
 
     selected_only = ->
 
-        if (centroids.getDefinitionExpression() and 
+        if (centroids.getDefinitionExpression() and
+            centroids.getDefinitionExpression() != no_definition_query and
             window.highlighted_sites.length == 0)
-                centroids.setDefinitionExpression ""
-                sites.setDefinitionExpression ""
+                centroids.setDefinitionExpression no_definition_query
+                sites.setDefinitionExpression no_definition_query
         else
             if window.highlighted_sites.length != 0
                 window.selected_sites = window.highlighted_sites
@@ -348,7 +354,9 @@ require([
             console.log sites
             
             window.selected_sites = sites
-            centroids.setDefinitionExpression ""
+            centroids.setDefinitionExpression no_definition_query
+            sites.setDefinitionExpression no_definition_query
+
             selected_only()
             
     ### create map #################################################################
@@ -665,6 +673,9 @@ require([
         outFields: ["*"]
 
     sites.setRenderer(line_renderer)
+
+    centroids.setDefinitionExpression no_definition_query
+    sites.setDefinitionExpression no_definition_query
 
     layers_list = [sites, centroids]
     map.addLayers layers_list

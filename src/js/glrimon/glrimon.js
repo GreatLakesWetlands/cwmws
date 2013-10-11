@@ -36,7 +36,7 @@
     /* setup misc
     */
 
-    var basemapGallery, breaks_renderer, centroids, clear_site_selection, colors, do_legend, i, layer_list_setup_feature_layer, layer_list_setup_map_layer, layers_list, line_renderer, link, locate, locator, perimeter, popup, querySites, range, renderer, renderers, select, selected_only, set_legend, show_only, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, year_renderer, _i, _j, _k, _len, _len1, _ref;
+    var basemapGallery, breaks_renderer, centroids, clear_site_selection, colors, do_legend, i, layer_list_setup_feature_layer, layer_list_setup_map_layer, layers_list, line_renderer, link, locate, locator, make_renderer, perimeter, popup, querySites, range, renderer, renderers, select, selected_only, set_legend, show_only, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, year_renderer, _i, _j, _k, _len, _len1, _ref;
     parser.parse();
     popup = new Popup({
       titleInBody: false
@@ -58,7 +58,7 @@
         "wkid": map.spatialReference
       };
       q.returnGeometry = true;
-      q.outFields = ["site", "name", "geomorph", 'lat', 'lon'];
+      q.outFields = ["*"];
       q.geometry = queryGeom;
       q.where = centroids.getDefinitionExpression();
       popupTemplate = new esri.dijit.PopupTemplate({
@@ -90,6 +90,26 @@
             format: {
               places: 6
             }
+          }, {
+            fieldName: "year",
+            visible: true,
+            label: "year: "
+          }, {
+            fieldName: "bird_ibi",
+            visible: true,
+            label: "bird_ibi: "
+          }, {
+            fieldName: "fish_ibi",
+            visible: true,
+            label: "fish_ibi: "
+          }, {
+            fieldName: "invert_ibi",
+            visible: true,
+            label: "invert_ibi: "
+          }, {
+            fieldName: "veg_ibi",
+            visible: true,
+            label: "veg_ibi: "
           }
         ]
       });
@@ -229,9 +249,13 @@
     set_legend = function(which) {
       var renderer;
       renderer = renderers[which];
-      centroids.setRenderer(renderer);
-      centroids.hide();
-      return centroids.show();
+      if (!renderer) {
+        return renderer = make_renderer(which);
+      } else {
+        centroids.setRenderer(renderer);
+        centroids.hide();
+        return centroids.show();
+      }
     };
     /* show_only
     */
@@ -611,6 +635,61 @@
       breaks_renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([100, 100, 100]), 1), new Color(colors[i])));
       console.log(start, stop, colors[i]);
     }
+    /* make_renderer
+    */
+
+    make_renderer = function(which) {
+      var def, q, qt, values;
+      breaks_renderer = new ClassBreaksRenderer(null, which);
+      colors = [[1, 130, 0], [2, 184, 0], [255, 255, 0], [255, 191, 0], [254, 0, 0]];
+      q = new esri.tasks.Query();
+      q.returnGeometry = false;
+      q.outFields = [which];
+      q.where = centroids.getDefinitionExpression();
+      qt = new esri.tasks.QueryTask(layer_url + centroid_layer);
+      def = qt.execute(q);
+      values = [];
+      console.log(which);
+      return def.addCallback((function(values) {
+        return function(result) {
+          var feature, x, _l, _len2, _m, _ref1, _ref2;
+          _ref1 = result.features;
+          for (_l = 0, _len2 = _ref1.length; _l < _len2; _l++) {
+            feature = _ref1[_l];
+            x = feature.attributes[which];
+            if (x !== null && x !== ' ' && x !== '') {
+              values.push(parseFloat(feature.attributes[which]));
+            }
+          }
+          console.log(values);
+          range = [
+            values.reduce(function(a, b) {
+              return Math.min(a, b);
+            }), Math.max.apply(Math, values)
+          ];
+          steps = colors.length;
+          step = (range[1] - range[0]) / steps;
+          for (i = _m = 0, _ref2 = steps - 1; 0 <= _ref2 ? _m <= _ref2 : _m >= _ref2; i = 0 <= _ref2 ? ++_m : --_m) {
+            if (i === 0) {
+              start = -Infinity;
+              stop = range[0] + (i + 1) * step;
+            } else if (i === steps - 1) {
+              start = range[0] + i * step;
+              stop = +Infinity;
+            } else {
+              start = range[0] + i * step;
+              stop = range[0] + (i + 1) * step;
+            }
+            breaks_renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, null, new Color(colors[i])));
+            console.log(start, stop, colors[i]);
+          }
+          centroids.setRenderer(breaks_renderer);
+          centroids.hide();
+          centroids.show();
+          return breaks_renderer;
+        };
+      })(values));
+    };
     /* load layers
     */
 

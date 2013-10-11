@@ -170,7 +170,7 @@ require([
         q = new esri.tasks.Query()
         q.outSpatialReference = {"wkid": map.spatialReference}
         q.returnGeometry = true
-        q.outFields = ["site", "name", "geomorph", 'lat', 'lon']
+        q.outFields = ["*"]
         q.geometry = queryGeom
         
         q.where = centroids.getDefinitionExpression()
@@ -183,6 +183,11 @@ require([
                 { fieldName: "geomorph", visible: true, label: "geomorph: " },
                 { fieldName: "lat", visible: true, label: "lat: ", format: places: 6 },
                 { fieldName: "lon", visible: true, label: "lon: ", format: places: 6 },
+                { fieldName: "year", visible: true, label: "year: " },
+                { fieldName: "bird_ibi", visible: true, label: "bird_ibi: " },
+                { fieldName: "fish_ibi", visible: true, label: "fish_ibi: " },
+                { fieldName: "invert_ibi", visible: true, label: "invert_ibi: " },
+                { fieldName: "veg_ibi", visible: true, label: "veg_ibi: " },
             ]
 
         qt = new esri.tasks.QueryTask layer_url + boundary_layer
@@ -323,14 +328,12 @@ require([
 
         renderer = renderers[which]
 
-        #for layer in layers_list
-        #    map.removeLayer(layer)
-        centroids.setRenderer(renderer)
-        #for layer in layers_list
-        #    map.addLayer(layer)
-        
-        centroids.hide()
-        centroids.show()
+        if not renderer
+            renderer = make_renderer which
+        else
+            centroids.setRenderer(renderer)
+            centroids.hide()
+            centroids.show()
     ### show_only ##################################################################
 
     show_only = ->
@@ -665,6 +668,77 @@ require([
                 
         console.log start, stop, colors[i]
 
+    ### make_renderer ########################################################
+
+    make_renderer = (which) ->
+
+        breaks_renderer = new ClassBreaksRenderer null, which
+        
+        colors = [
+            [1,130,0],
+            [2,184,0],
+            # [195,255,195],
+            [255,255,0],
+            [255,191,0],
+            [254,0,0],
+            # [163,0,0],
+        ]
+        
+        q = new esri.tasks.Query()
+        q.returnGeometry = false
+        q.outFields = [which]
+        q.where = centroids.getDefinitionExpression()
+
+        qt = new esri.tasks.QueryTask layer_url + centroid_layer
+        def = qt.execute q
+
+        values = []
+        console.log which
+        
+        def.addCallback do (values=values) -> (result) ->   
+            for feature in result.features
+                x = feature.attributes[which]
+                if x isnt null and x != ' ' and x != ''
+                    values.push parseFloat(feature.attributes[which])
+                    # values.push feature.attributes[which]
+                
+            console.log values
+            
+            range = [
+                values.reduce (a,b) -> Math.min a,b
+              ,
+                Math.max values...
+            ]
+            # range = [-92, -74]
+            
+            steps = colors.length
+            step = (range[1] - range[0]) / steps
+            for i in [0..steps-1]
+                if i == 0
+                    start = -Infinity
+                    stop = range[0]+(i+1)*step
+                else if i == steps - 1
+                    start = range[0]+i*step
+                    stop = +Infinity
+                else
+                    start = range[0]+i*step
+                    stop = range[0]+(i+1)*step
+                
+                breaks_renderer.addBreak start, stop, # star,
+                    new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 10,
+                        null #new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+                        #    new Color([100,100,100]), 1,
+                        new Color(colors[i])
+                        
+                console.log start, stop, colors[i]
+                
+            centroids.setRenderer(breaks_renderer)
+        
+            centroids.hide()
+            centroids.show()
+                
+            return breaks_renderer
+            
     ### load layers ################################################################
 
     renderer = breaks_renderer

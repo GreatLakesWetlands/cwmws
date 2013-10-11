@@ -202,13 +202,16 @@
     /* selected_only
     */
 
-    selected_only = function() {
+    selected_only = function(evt, force) {
       var definition, text;
-      if (centroids.getDefinitionExpression() && centroids.getDefinitionExpression() !== no_definition_query && window.highlighted_sites.length === 0) {
+      if (force == null) {
+        force = false;
+      }
+      if (!force && centroids.getDefinitionExpression() && centroids.getDefinitionExpression() !== no_definition_query && window.highlighted_sites.length === 0) {
         centroids.setDefinitionExpression(no_definition_query);
         sites.setDefinitionExpression(no_definition_query);
       } else {
-        if (window.highlighted_sites.length !== 0) {
+        if (!force && window.highlighted_sites.length !== 0) {
           window.selected_sites = window.highlighted_sites;
         }
         definition = "SITE in (" + (window.selected_sites.toString()) + ")";
@@ -254,7 +257,7 @@
       qt = new esri.tasks.QueryTask(layer_url + centroid_layer);
       def = qt.execute(q);
       return def.addCallback(function(result) {
-        var feature, site, sites;
+        var evt, feature, force, site, sites;
         sites = (function() {
           var _j, _len1, _ref1, _results;
           _ref1 = result.features;
@@ -268,23 +271,21 @@
         console.log(sites);
         console.log(window.selected_sites);
         if (window.selected_sites && window.selected_sites.length > 0) {
-          sites = ((function() {
+          sites = (function() {
             var _j, _len1, _results;
-            if (__indexOf.call(window.selected_sites, site) >= 0) {
-              _results = [];
-              for (_j = 0, _len1 = sites.length; _j < _len1; _j++) {
-                site = sites[_j];
+            _results = [];
+            for (_j = 0, _len1 = sites.length; _j < _len1; _j++) {
+              site = sites[_j];
+              if (__indexOf.call(window.selected_sites, site) >= 0) {
                 _results.push(site);
               }
-              return _results;
             }
-          })());
+            return _results;
+          })();
         }
         console.log(sites);
         window.selected_sites = sites;
-        centroids.setDefinitionExpression(no_definition_query);
-        sites.setDefinitionExpression(no_definition_query);
-        return selected_only();
+        return selected_only(evt = null, force = true);
       });
     };
     /* create map

@@ -291,15 +291,15 @@ require([
         sites.setDefinitionExpression no_definition_query
     ### selected_only ##############################################################
 
-    selected_only = ->
+    selected_only = (evt, force = false) ->
 
-        if (centroids.getDefinitionExpression() and
+        if (not force and centroids.getDefinitionExpression() and
             centroids.getDefinitionExpression() != no_definition_query and
             window.highlighted_sites.length == 0)
                 centroids.setDefinitionExpression no_definition_query
                 sites.setDefinitionExpression no_definition_query
         else
-            if window.highlighted_sites.length != 0
+            if not force and window.highlighted_sites.length != 0
                 window.selected_sites = window.highlighted_sites
             definition = "SITE in (#{window.selected_sites.toString()})"
             centroids.setDefinitionExpression definition
@@ -349,15 +349,15 @@ require([
             console.log sites
             console.log window.selected_sites
             if window.selected_sites and window.selected_sites.length > 0
-                sites = (site for site in sites if site in window.selected_sites)
+                sites = (site for site in sites when site in window.selected_sites)
                 
             console.log sites
             
             window.selected_sites = sites
-            centroids.setDefinitionExpression no_definition_query
-            sites.setDefinitionExpression no_definition_query
+            #centroids.setDefinitionExpression no_definition_query
+            #sites.setDefinitionExpression no_definition_query
 
-            selected_only()
+            selected_only(evt=null, force=true)
             
     ### create map #################################################################
 

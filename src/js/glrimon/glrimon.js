@@ -9,7 +9,7 @@
 
 
 (function() {
-  var boundary_layer, centroid_layer, layer_url, map, no_definition_query, querySites, species_table,
+  var boundary_layer, centroid_layer, layer_url, map, no_definition_query, species_table,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   map = {};
@@ -28,68 +28,6 @@
 
   no_definition_query = "1 = 1";
 
-  /* querySites
-  */
-
-
-  querySites = function(e) {
-    /* query server for sites near mouseclick
-    */
-
-    var def, pad, popupTemplate, q, qt, queryGeom;
-    pad = map.extent.getWidth() / map.width * 5;
-    queryGeom = new esri.geometry.Extent(e.mapPoint.x - pad, e.mapPoint.y - pad, e.mapPoint.x + pad, e.mapPoint.y + pad, map.spatialReference);
-    q = new esri.tasks.Query();
-    q.outSpatialReference = {
-      "wkid": map.spatialReference
-    };
-    q.returnGeometry = true;
-    q.outFields = ["site", "name", "geomorph", 'lat', 'lon'];
-    q.geometry = queryGeom;
-    popupTemplate = new esri.dijit.PopupTemplate({
-      title: "{site}",
-      fieldInfos: [
-        {
-          fieldName: "site",
-          visible: true,
-          label: "site: "
-        }, {
-          fieldName: "name",
-          visible: true,
-          label: "name: "
-        }, {
-          fieldName: "geomorph",
-          visible: true,
-          label: "geomorph: "
-        }, {
-          fieldName: "lat",
-          visible: true,
-          label: "lat: ",
-          format: {
-            places: 6
-          }
-        }, {
-          fieldName: "lon",
-          visible: true,
-          label: "lon: ",
-          format: {
-            places: 6
-          }
-        }
-      ]
-    });
-    qt = new esri.tasks.QueryTask(layer_url + boundary_layer);
-    def = qt.execute(q);
-    def.addCallback(function(result) {
-      return dojo.map(result.features, function(f) {
-        f.setInfoTemplate(popupTemplate);
-        return f;
-      });
-    });
-    map.infoWindow.setFeatures([def]);
-    return map.infoWindow.show(e.screenPoint, map.getInfoWindowAnchor(e.screenPoint));
-  };
-
   /* main
   */
 
@@ -98,13 +36,74 @@
     /* setup misc
     */
 
-    var basemapGallery, breaks_renderer, centroids, clear_site_selection, colors, do_legend, i, layer_list_setup_feature_layer, layer_list_setup_map_layer, layers_list, line_renderer, link, locate, locator, perimeter, popup, range, renderer, renderers, select, selected_only, set_legend, show_only, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, year_renderer, _i, _j, _k, _len, _len1, _ref;
+    var basemapGallery, breaks_renderer, centroids, clear_site_selection, colors, do_legend, i, layer_list_setup_feature_layer, layer_list_setup_map_layer, layers_list, line_renderer, link, locate, locator, perimeter, popup, querySites, range, renderer, renderers, select, selected_only, set_legend, show_only, show_species, simple_renderer, sites, star, start, step, steps, stop, thing, things, unique_renderer, year_renderer, _i, _j, _k, _len, _len1, _ref;
     parser.parse();
     popup = new Popup({
       titleInBody: false
     }, domConstruct.create("div"));
     star = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_SQUARE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0, 0, 255]), 2), new Color([0, 255, 0, 0.25]));
     perimeter = new SimpleFillSymbol(SimpleFillSymbol.STYLE_NULL, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0, 0, 255]), 1), new Color([0, 0, 0]));
+    /* querySites
+    */
+
+    querySites = function(e) {
+      /* query server for sites near mouseclick
+      */
+
+      var def, pad, popupTemplate, q, qt, queryGeom;
+      pad = map.extent.getWidth() / map.width * 5;
+      queryGeom = new esri.geometry.Extent(e.mapPoint.x - pad, e.mapPoint.y - pad, e.mapPoint.x + pad, e.mapPoint.y + pad, map.spatialReference);
+      q = new esri.tasks.Query();
+      q.outSpatialReference = {
+        "wkid": map.spatialReference
+      };
+      q.returnGeometry = true;
+      q.outFields = ["site", "name", "geomorph", 'lat', 'lon'];
+      q.geometry = queryGeom;
+      q.where = centroids.getDefinitionExpression();
+      popupTemplate = new esri.dijit.PopupTemplate({
+        title: "{site}",
+        fieldInfos: [
+          {
+            fieldName: "site",
+            visible: true,
+            label: "site: "
+          }, {
+            fieldName: "name",
+            visible: true,
+            label: "name: "
+          }, {
+            fieldName: "geomorph",
+            visible: true,
+            label: "geomorph: "
+          }, {
+            fieldName: "lat",
+            visible: true,
+            label: "lat: ",
+            format: {
+              places: 6
+            }
+          }, {
+            fieldName: "lon",
+            visible: true,
+            label: "lon: ",
+            format: {
+              places: 6
+            }
+          }
+        ]
+      });
+      qt = new esri.tasks.QueryTask(layer_url + boundary_layer);
+      def = qt.execute(q);
+      def.addCallback(function(result) {
+        return dojo.map(result.features, function(f) {
+          f.setInfoTemplate(popupTemplate);
+          return f;
+        });
+      });
+      map.infoWindow.setFeatures([def]);
+      return map.infoWindow.show(e.screenPoint, map.getInfoWindowAnchor(e.screenPoint));
+    };
     /* show_species
     */
 
@@ -164,6 +163,7 @@
         q.outFields = ["site", "name", "geomorph", 'lon'];
         q.geometry = evt.geometry;
         q.spatialRelationship = Query.SPATIAL_REL_INTERSECTS;
+        q.where = centroids.getDefinitionExpression();
         map.enableMapNavigation();
         qt = new esri.tasks.QueryTask(layer_url + boundary_layer);
         def = qt.execute(q);
@@ -551,7 +551,7 @@
       thing = things[_i];
       unique_renderer.addValue({
         value: thing.value,
-        symbol: new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, null, new Color(thing.color)),
+        symbol: new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, null, new Color(thing.color)),
         label: thing.value,
         description: thing.value
       });
@@ -584,7 +584,7 @@
       thing = things[_j];
       year_renderer.addValue({
         value: thing.value,
-        symbol: new SimpleMarkerSymbol(thing.shape, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color(thing.color), 2), new Color(thing.color)),
+        symbol: new SimpleMarkerSymbol(thing.shape, 10, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color(thing.color), 2), new Color(thing.color)),
         label: thing.value,
         description: thing.value
       });

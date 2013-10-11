@@ -19,44 +19,9 @@ no_definition_query = "1 = 1"
 # getting "Origin <whatever> is not allowed by Access-Control-Allow-Origin."
 # errors, seems to go away if the definition query is set to this instead
 # of ""?
-### querySites #################################################################
 
-querySites = (e) ->
-    ### query server for sites near mouseclick ###
-    
-    # build an extent around the click point
-    pad = map.extent.getWidth() / map.width * 5
-    queryGeom = new esri.geometry.Extent e.mapPoint.x - pad, e.mapPoint.y - pad,
-        e.mapPoint.x + pad, e.mapPoint.y + pad,
-        map.spatialReference
-    q = new esri.tasks.Query()
-    q.outSpatialReference = {"wkid": map.spatialReference}
-    q.returnGeometry = true
-    q.outFields = ["site", "name", "geomorph", 'lat', 'lon']
-    q.geometry = queryGeom
-
-    popupTemplate = new esri.dijit.PopupTemplate
-        title: "{site}"
-        fieldInfos: [
-            { fieldName: "site", visible: true, label: "site: " },
-            { fieldName: "name", visible: true, label: "name: " },
-            { fieldName: "geomorph", visible: true, label: "geomorph: " },
-            { fieldName: "lat", visible: true, label: "lat: ", format: places: 6 },
-            { fieldName: "lon", visible: true, label: "lon: ", format: places: 6 },
-        ]
-
-    qt = new esri.tasks.QueryTask layer_url + boundary_layer
-    def = qt.execute q
-    def.addCallback (result) ->
-
-        dojo.map result.features, (f) ->
-            f.setInfoTemplate popupTemplate
-            return f
-
-    map.infoWindow.setFeatures [def]
-    # show the popup
-    map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
-
+# for GLEI-2 only
+# no_definition_query = "site in (1027, 1041, 1077, 1458, 1465, 1469, 1497, 1514, 1698, 1703, 1859, 1862, 1863, 1866, 1888, 1928, 5512, 5541, 5574, 5634, 5729, 5933, 5950)"
 ### main #######################################################################
 
 require([
@@ -192,6 +157,46 @@ require([
             new Color([0,0,255]), 1
         new Color([0,0,0])
 
+    ### querySites #################################################################
+
+    querySites = (e) ->
+        ### query server for sites near mouseclick ###
+        
+        # build an extent around the click point
+        pad = map.extent.getWidth() / map.width * 5
+        queryGeom = new esri.geometry.Extent e.mapPoint.x - pad, e.mapPoint.y - pad,
+            e.mapPoint.x + pad, e.mapPoint.y + pad,
+            map.spatialReference
+        q = new esri.tasks.Query()
+        q.outSpatialReference = {"wkid": map.spatialReference}
+        q.returnGeometry = true
+        q.outFields = ["site", "name", "geomorph", 'lat', 'lon']
+        q.geometry = queryGeom
+        
+        q.where = centroids.getDefinitionExpression()
+
+        popupTemplate = new esri.dijit.PopupTemplate
+            title: "{site}"
+            fieldInfos: [
+                { fieldName: "site", visible: true, label: "site: " },
+                { fieldName: "name", visible: true, label: "name: " },
+                { fieldName: "geomorph", visible: true, label: "geomorph: " },
+                { fieldName: "lat", visible: true, label: "lat: ", format: places: 6 },
+                { fieldName: "lon", visible: true, label: "lon: ", format: places: 6 },
+            ]
+
+        qt = new esri.tasks.QueryTask layer_url + boundary_layer
+        def = qt.execute q
+        def.addCallback (result) ->
+
+            dojo.map result.features, (f) ->
+                f.setInfoTemplate popupTemplate
+                return f
+
+        map.infoWindow.setFeatures [def]
+        # show the popup
+        map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
+
     ### show_species ###############################################################
 
     show_species = (evt) ->
@@ -246,6 +251,8 @@ require([
             q.outFields = ["site", "name", "geomorph", 'lon']
             q.geometry = evt.geometry
             q.spatialRelationship = Query.SPATIAL_REL_INTERSECTS
+            
+            q.where = centroids.getDefinitionExpression()
             
             map.enableMapNavigation()
         
@@ -593,7 +600,7 @@ require([
         unique_renderer.addValue 
             value: thing.value
             symbol:
-                new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 8,
+                new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 10,
                     null # new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
                     #    new Color(thing.color), 2,
                     new Color(thing.color)
@@ -618,7 +625,7 @@ require([
         year_renderer.addValue 
             value: thing.value
             symbol:
-                new SimpleMarkerSymbol thing.shape, 8,
+                new SimpleMarkerSymbol thing.shape, 10,
                     new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
                         new Color(thing.color), 2,
                     new Color(thing.color)

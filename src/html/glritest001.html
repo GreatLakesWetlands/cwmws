@@ -31,6 +31,52 @@
         <div id="sidePane"
         data-dojo-type="dijit/layout/ContentPane"
         data-dojo-props="region:'left'">
+
+            <div data-dojo-type="dijit/TitlePane" id='sites-pane'
+                data-dojo-props="region:'right', title:'Sites', closable:false, open:true">
+        
+                    <div class="search-box"></div>
+                    
+                    <hr/>
+                    
+                    <div>Select sites: 
+                    <button id="select-rect" data-dojo-type="dijit/form/Button">
+                        by Rectangle</button>
+                    <button id="select-only" data-dojo-type="dijit/form/Button">
+                        Show selected/all</button>
+                    
+                    <button id="select-clear" data-dojo-type="dijit/form/Button">
+                        Reset</button>
+                    <p id='select_results'>No sites selected.</p></div>
+                    
+                    <div>Color sites by:
+                    <select id='legend-pick' data-dojo-type="dijit/form/Select">
+                        <option value='geomorph'>Geomorph</option>
+                        <option value='samp_year'>Sampling year</option>
+                        <option value='bird_ibi'>Bird IBI</option>
+                        <option value='fish_ibi'>Fish IBI</option>
+                        <option value='invert_ibi'>Invert. IBI</option>
+                        <option value='veg_ibi'>Veg. IBI</option>
+                    </select>
+                    <button id="legend-redo"  data-dojo-type="dijit/form/Button">re-do
+                    </button>
+                    </div>                        
+                    
+                    <div>
+                    <div><button id="show-only"  data-dojo-type="dijit/form/Button">Select</button> only sites with data for </div>
+                    <div><input id='spp_any' value='spp_any' name='spp_sel' checked='1'
+                          type='radio' data-dojo-type="dijit/form/RadioButton"/>any of
+                         <input id='spp_sel' value='spp_all' name='spp_sel' 
+                          type='radio' data-dojo-type="dijit/form/RadioButton"/>all of
+                    </div>
+                    <div><input id='i_amphibian' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_amphibian'>amphibian</label></div>
+                    <div><input id='i_bird' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_bird'>bird</label></div>
+                    <div><input id='i_fish' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_fish'>fish</label></div>
+                    <div><input id='i_invertebrate' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_invertebrate'>invertebrate</label></div>
+                    <div><input id='i_plant' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_plant'>plant</label></div>
+                    </div>
+            </div>
+
                    
             <div data-dojo-type="dijit/TitlePane" id='legend_pane'
                 data-dojo-props="region:'right', title:'Legend', closable:false, open:true">
@@ -56,51 +102,6 @@
             
                 <ul class='layers-list' id='layers'></ul>
                 
-            </div>
-
-
-            <div data-dojo-type="dijit/TitlePane" id='sites-pane'
-                data-dojo-props="region:'right', title:'Sites', closable:false, open:false">
-        
-                    <div class="search-box"></div>
-                    
-                    <hr/>
-                    
-                    <div>Select sites: 
-                    <button id="select-rect" data-dojo-type="dijit/form/Button">
-                        by Rectangle</button>
-                    <button id="select-only" data-dojo-type="dijit/form/Button">
-                        Show selected/all</button>
-                    
-                    <button id="select-clear" data-dojo-type="dijit/form/Button">
-                        Reset</button>
-                    <p id='select_results'>No sites selected.</p></div>
-                    
-                    <div>Color sites by:
-                    <select id='legend-pick' data-dojo-type="dijit/form/Select">
-                        <option>---select---</option>
-                        <option value='bird_ibi'>Bird IBI</option>
-                        <option value='fish_ibi'>Fish IBI</option>
-                        <option value='invert_ibi'>Invert. IBI</option>
-                        <option value='veg_ibi'>Veg. IBI</option>
-                        <option value='samp_year'>Sampling year</option>
-                        <option value='geomorph'>Geomorph</option>
-                    </select>
-                    </div>                        
-                    
-                    <div>
-                    <div><button id="show-only"  data-dojo-type="dijit/form/Button">Select</button> only sites with data for </div>
-                    <div><input id='spp_any' value='spp_any' name='spp_sel' checked='1'
-                          type='radio' data-dojo-type="dijit/form/RadioButton"/>any of
-                         <input id='spp_sel' value='spp_all' name='spp_sel' 
-                          type='radio' data-dojo-type="dijit/form/RadioButton"/>all of
-                    </div>
-                    <div><input id='i_amphibian' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_amphibian'>amphibian</label></div>
-                    <div><input id='i_bird' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_bird'>bird</label></div>
-                    <div><input id='i_fish' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_fish'>fish</label></div>
-                    <div><input id='i_invertebrate' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_invertebrate'>invertebrate</label></div>
-                    <div><input id='i_plant' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_plant'>plant</label></div>
-                    </div>
             </div>
 
             <div data-dojo-type="dijit/TitlePane" id='tools-pane'

@@ -217,7 +217,8 @@
       dom.byId('select_results').innerHTML = "No sites selected.";
       map.graphics.clear();
       centroids.setDefinitionExpression(no_definition_query);
-      return sites.setDefinitionExpression(no_definition_query);
+      sites.setDefinitionExpression(no_definition_query);
+      return set_legend("geomorph");
     };
     /* selected_only
     */
@@ -253,8 +254,8 @@
         return renderer = make_renderer(which);
       } else {
         centroids.setRenderer(renderer);
-        centroids.hide();
-        return centroids.show();
+        map.removeLayer(centroids);
+        return map.addLayer(centroids);
       }
     };
     /* show_only
@@ -338,7 +339,7 @@
       "href": "javascript: void(0);"
     }, dojo_query(".actionList", map.infoWindow.domNode)[0]);
     dojo_on(link, "click", show_species);
-    /* legend
+    /* do_legend
     */
 
     do_legend = function(evt) {
@@ -349,6 +350,7 @@
           title: layer.layer.name
         };
       });
+      console.log(layerInfo);
       if (layerInfo.length > 0) {
         legendDijit = new Legend({
           map: map,
@@ -639,9 +641,10 @@
     */
 
     make_renderer = function(which) {
-      var def, q, qt, values;
+      var def, names, q, qt, values;
       breaks_renderer = new ClassBreaksRenderer(null, which);
-      colors = [[1, 130, 0], [2, 184, 0], [255, 255, 0], [255, 191, 0], [254, 0, 0]];
+      colors = [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0], [1, 100, 0]];
+      names = ["Highly degraded", "Degraded", "Moderately impacted", "Mildly impacted", "Reference"];
       q = new esri.tasks.Query();
       q.returnGeometry = false;
       q.outFields = [which];
@@ -656,9 +659,9 @@
           _ref1 = result.features;
           for (_l = 0, _len2 = _ref1.length; _l < _len2; _l++) {
             feature = _ref1[_l];
-            x = feature.attributes[which];
-            if (x !== null && x !== ' ' && x !== '') {
-              values.push(parseFloat(feature.attributes[which]));
+            x = feature.attributes[which].split(' ')[0];
+            if (x !== null && !isNaN(x) && x !== ' ' && x !== '') {
+              values.push(parseFloat(x));
             }
           }
           console.log(values);
@@ -680,7 +683,12 @@
               start = range[0] + i * step;
               stop = range[0] + (i + 1) * step;
             }
-            breaks_renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, null, new Color(colors[i])));
+            breaks_renderer.addBreak({
+              minValue: start,
+              maxValue: stop,
+              symbol: new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([100, 100, 100]), 1), new Color(colors[i])),
+              label: names[i]
+            });
             console.log(start, stop, colors[i]);
           }
           centroids.setRenderer(breaks_renderer);
@@ -727,6 +735,9 @@
     registry.byId("select-only").on("click", selected_only);
     registry.byId("show-only").on("click", show_only);
     registry.byId("legend-pick").on("change", function() {
+      return set_legend(registry.byId("legend-pick").get('value'));
+    });
+    registry.byId("legend-redo").on("click", function() {
       return set_legend(registry.byId("legend-pick").get('value'));
     });
     map.on('load', function(evt) {

@@ -301,6 +301,7 @@ require([
         map.graphics.clear()
         centroids.setDefinitionExpression no_definition_query
         sites.setDefinitionExpression no_definition_query
+        set_legend "geomorph"  # because other renderers hide sites
     ### selected_only ##############################################################
 
     selected_only = (evt, force = false) ->
@@ -332,8 +333,10 @@ require([
             renderer = make_renderer which
         else
             centroids.setRenderer(renderer)
-            centroids.hide()
-            centroids.show()
+            map.removeLayer(centroids)
+            map.addLayer(centroids)
+            #centroids.hide()
+            #centroids.show()
     ### show_only ##################################################################
 
     show_only = ->
@@ -395,13 +398,15 @@ require([
 
     dojo_on link, "click", show_species
 
-    ### legend #####################################################################
+    ### do_legend #####################################################################
 
     do_legend = (evt) ->
 
         layerInfo = arrayUtils.map evt.layers, (layer, index) ->
             layer:layer.layer
-            title:layer.layer.name
+            title: layer.layer.name
+            
+        console.log layerInfo
             
         if layerInfo.length > 0
             legendDijit = new Legend 
@@ -675,13 +680,20 @@ require([
         breaks_renderer = new ClassBreaksRenderer null, which
         
         colors = [
-            [1,130,0],
-            [2,184,0],
-            # [195,255,195],
-            [255,255,0],
-            [255,191,0],
-            [254,0,0],
             # [163,0,0],
+            [254,0,0],
+            [255,191,0],
+            [255,255,0],
+            # [195,255,195],
+            [2,194,0],
+            [1,100,0],
+        ]
+        names = [
+            "Highly degraded",
+            "Degraded",
+            "Moderately impacted",
+            "Mildly impacted",
+            "Reference",
         ]
         
         q = new esri.tasks.Query()
@@ -697,10 +709,9 @@ require([
         
         def.addCallback do (values=values) -> (result) ->   
             for feature in result.features
-                x = feature.attributes[which]
-                if x isnt null and x != ' ' and x != ''
-                    values.push parseFloat(feature.attributes[which])
-                    # values.push feature.attributes[which]
+                x = feature.attributes[which].split(' ')[0]
+                if x isnt null and not isNaN(x) and x != ' ' and x != ''
+                    values.push parseFloat(x)
                 
             console.log values
             
@@ -709,7 +720,6 @@ require([
               ,
                 Math.max values...
             ]
-            # range = [-92, -74]
             
             steps = colors.length
             step = (range[1] - range[0]) / steps
@@ -724,11 +734,15 @@ require([
                     start = range[0]+i*step
                     stop = range[0]+(i+1)*step
                 
-                breaks_renderer.addBreak start, stop, # star,
-                    new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 10,
-                        null #new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
-                        #    new Color([100,100,100]), 1,
-                        new Color(colors[i])
+                breaks_renderer.addBreak 
+                    minValue: start
+                    maxValue: stop
+                    symbol:
+                        new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 10,
+                            new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
+                                new Color([100,100,100]), 1,
+                            new Color(colors[i])
+                    label: names[i]
                         
                 console.log start, stop, colors[i]
                 
@@ -779,6 +793,8 @@ require([
     registry.byId("show-only").on "click", show_only
 
     registry.byId("legend-pick").on "change", ->
+        set_legend registry.byId("legend-pick").get('value')
+    registry.byId("legend-redo").on "click", ->
         set_legend registry.byId("legend-pick").get('value')
 
     map.on 'load', (evt) ->

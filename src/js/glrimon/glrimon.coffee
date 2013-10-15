@@ -15,7 +15,8 @@ centroid_layer = "/0"
 boundary_layer = "/1"
 species_table = "/2"
 
-no_definition_query = "1 = 1"
+no_definition_query = '1 = 1'
+no_definition_query = '"site" > 0 and "site" < 10000'
 # getting "Origin <whatever> is not allowed by Access-Control-Allow-Origin."
 # errors, seems to go away if the definition query is set to this instead
 # of ""?
@@ -302,6 +303,7 @@ require([
         centroids.setDefinitionExpression no_definition_query
         sites.setDefinitionExpression no_definition_query
         set_legend "geomorph"  # because other renderers hide sites
+        
     ### selected_only ##############################################################
 
     selected_only = (evt, force = false) ->
@@ -335,8 +337,8 @@ require([
             centroids.setRenderer(renderer)
             map.removeLayer(centroids)
             map.addLayer(centroids)
-            #centroids.hide()
-            #centroids.show()
+            centroids.hide()
+            centroids.show()
     ### show_only ##################################################################
 
     show_only = ->
@@ -680,21 +682,63 @@ require([
         breaks_renderer = new ClassBreaksRenderer null, which
         
         colors = [
-            # [163,0,0],
+            [163,0,0],
             [254,0,0],
             [255,191,0],
             [255,255,0],
-            # [195,255,195],
+            [195,255,195],
             [2,194,0],
             [1,100,0],
         ]
-        names = [
-            "Highly degraded",
-            "Degraded",
-            "Moderately impacted",
-            "Mildly impacted",
-            "Reference",
-        ]
+        name_lists = 
+            fish_ibi: 
+                names: [
+                    "Highly degraded",
+                    "Degraded",
+                    "Moderately impacted",
+                    "Reference",
+                    ]
+                colors: [
+                    [254,0,0],
+                    [255,191,0],
+                    [255,255,0],
+                    [2,194,0],
+                    ]
+
+            invert_ibi: 
+                names: [
+                    "Degraded",
+                    "Moderately degraded",
+                    "Moderately impacted",
+                    "Mildly impacted",
+                    "Reference",
+                    ]
+                colors: [
+                    [254,0,0],
+                    [255,191,0],
+                    [255,255,0],
+                    [2,194,0],
+                    [1,100,0],
+                    ]
+            veg_ibi: 
+                names: [
+                    "Lowest score",
+                    " ",
+                    " ",
+                    " ",
+                    "Highest score",
+                    ]
+                colors: [
+                    [254,0,0],
+                    [255,191,0],
+                    [255,255,0],
+                    [2,194,0],
+                    [1,100,0],
+                    ]
+
+        colors = name_lists[which]['colors']
+        names = name_lists[which]['names']
+        
         
         q = new esri.tasks.Query()
         q.returnGeometry = false

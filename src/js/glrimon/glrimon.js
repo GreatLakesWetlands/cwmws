@@ -26,7 +26,9 @@
 
   species_table = "/2";
 
-  no_definition_query = "1 = 1";
+  no_definition_query = '1 = 1';
+
+  no_definition_query = '"site" > 0 and "site" < 10000';
 
   /* main
   */
@@ -255,7 +257,9 @@
       } else {
         centroids.setRenderer(renderer);
         map.removeLayer(centroids);
-        return map.addLayer(centroids);
+        map.addLayer(centroids);
+        centroids.hide();
+        return centroids.show();
       }
     };
     /* show_only
@@ -641,10 +645,25 @@
     */
 
     make_renderer = function(which) {
-      var def, names, q, qt, values;
+      var def, name_lists, names, q, qt, values;
       breaks_renderer = new ClassBreaksRenderer(null, which);
-      colors = [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0], [1, 100, 0]];
-      names = ["Highly degraded", "Degraded", "Moderately impacted", "Mildly impacted", "Reference"];
+      colors = [[163, 0, 0], [254, 0, 0], [255, 191, 0], [255, 255, 0], [195, 255, 195], [2, 194, 0], [1, 100, 0]];
+      name_lists = {
+        fish_ibi: {
+          names: ["Highly degraded", "Degraded", "Moderately impacted", "Reference"],
+          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0]]
+        },
+        invert_ibi: {
+          names: ["Degraded", "Moderately degraded", "Moderately impacted", "Mildly impacted", "Reference"],
+          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0], [1, 100, 0]]
+        },
+        veg_ibi: {
+          names: ["Lowest score", " ", " ", " ", "Highest score"],
+          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0], [1, 100, 0]]
+        }
+      };
+      colors = name_lists[which]['colors'];
+      names = name_lists[which]['names'];
       q = new esri.tasks.Query();
       q.returnGeometry = false;
       q.outFields = [which];

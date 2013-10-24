@@ -651,7 +651,7 @@
     */
 
     make_renderer = function(which) {
-      var def, name_lists, names, q, qt, values;
+      var def, name_lists, names, q, qt;
       breaks_renderer = new ClassBreaksRenderer(null, which);
       colors = [[163, 0, 0], [254, 0, 0], [255, 191, 0], [255, 255, 0], [195, 255, 195], [2, 194, 0], [1, 100, 0]];
       name_lists = {
@@ -670,27 +670,30 @@
       };
       colors = name_lists[which]['colors'];
       names = name_lists[which]['names'];
+      if (centroids.getDefinitionExpression() !== no_definition_query) {
+        colors = name_lists['veg_ibi']['colors'];
+        names = name_lists['veg_ibi']['names'];
+      }
       q = new esri.tasks.Query();
       q.returnGeometry = false;
       q.outFields = [which];
       q.where = centroids.getDefinitionExpression();
       qt = new esri.tasks.QueryTask(layer_url + centroid_layer);
       def = qt.execute(q);
-      values = [];
       console.log(which, 'pre-callback');
-      return def.addCallback((function(values) {
+      return def.addCallback((function(colors, names, which) {
         return function(result) {
-          var feature, x, _l, _len2, _m, _ref1, _ref2;
-          console.log('callback', result);
+          var feature, values, x, _l, _len2, _m, _ref1, _ref2;
+          values = [];
           _ref1 = result.features;
           for (_l = 0, _len2 = _ref1.length; _l < _len2; _l++) {
             feature = _ref1[_l];
-            x = feature.attributes[which].split(' ')[0];
-            if (x !== null && !isNaN(x) && x !== ' ' && x !== '') {
-              values.push(parseFloat(x));
+            x = feature.attributes[which];
+            if (x !== null && !isNaN(x) && x > 0) {
+              console.log(x);
+              values.push(x);
             }
           }
-          console.log(values);
           range = [
             values.reduce(function(a, b) {
               return Math.min(a, b);
@@ -700,7 +703,7 @@
           step = (range[1] - range[0]) / steps;
           for (i = _m = 0, _ref2 = steps - 1; 0 <= _ref2 ? _m <= _ref2 : _m >= _ref2; i = 0 <= _ref2 ? ++_m : --_m) {
             if (i === 0) {
-              start = -Infinity;
+              start = 0.0001;
               stop = range[0] + (i + 1) * step;
             } else if (i === steps - 1) {
               start = range[0] + i * step;
@@ -722,7 +725,7 @@
           centroids.show();
           return breaks_renderer;
         };
-      })(values));
+      })(colors, names, which));
     };
     /* load layers
     */

@@ -744,6 +744,11 @@ require([
         colors = name_lists[which]['colors']
         names = name_lists[which]['names']
         
+        if centroids.getDefinitionExpression() != no_definition_query
+            # don't use the explicit names
+            colors = name_lists['veg_ibi']['colors']
+            names = name_lists['veg_ibi']['names']
+            
         q = new esri.tasks.Query()
         q.returnGeometry = false
         q.outFields = [which]
@@ -752,19 +757,18 @@ require([
         qt = new esri.tasks.QueryTask layer_url + centroid_layer
         def = qt.execute q
 
-        values = []
         console.log which, 'pre-callback'
         
-        def.addCallback do (values=values) -> (result) ->  
+        def.addCallback do (colors=colors, names=names, which=which) -> (result) ->  
         
-            console.log 'callback', result
+            values = []
             
             for feature in result.features
-                x = feature.attributes[which].split(' ')[0]
-                if x isnt null and not isNaN(x) and x != ' ' and x != ''
-                    values.push parseFloat(x)
-                
-            console.log values
+                x = feature.attributes[which]
+                if x isnt null and not isNaN(x) and x > 0
+                    # Grrr, ArcGIS is translating null to zero
+                    console.log x
+                    values.push x
             
             range = [
                 values.reduce (a,b) -> Math.min a,b  # two ways
@@ -776,7 +780,7 @@ require([
             step = (range[1] - range[0]) / steps
             for i in [0..steps-1]
                 if i == 0
-                    start = -Infinity
+                    start = 0.0001 # -Infinity
                     stop = range[0]+(i+1)*step
                 else if i == steps - 1
                     start = range[0]+i*step

@@ -18,7 +18,9 @@
 
   window.highlighted_sites = [];
 
-  layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest002/MapServer";
+  window.theme_name = 'geomorph';
+
+  layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer";
 
   centroid_layer = "/0";
 
@@ -26,9 +28,9 @@
 
   species_table = "/2";
 
-  no_definition_query = '1 = 1';
-
   no_definition_query = '"site" > 0 and "site" < 10000';
+
+  no_definition_query = '1 = 1';
 
   /* main
   */
@@ -213,6 +215,9 @@
       dom.byId('select_results').innerHTML = "Draw a rectangle on the map";
       return toolbar.activate(esri.toolbars.Draw.RECTANGLE);
     };
+    /* clear_site_selection
+    */
+
     clear_site_selection = function() {
       window.highlighted_sites = [];
       window.selected_sites = [];
@@ -252,6 +257,7 @@
     set_legend = function(which) {
       var renderer;
       renderer = renderers[which];
+      window.theme_name = which;
       if (!renderer) {
         return renderer = make_renderer(which);
       } else {
@@ -351,7 +357,7 @@
       layerInfo = arrayUtils.map(evt.layers, function(layer, index) {
         return {
           layer: layer.layer,
-          title: layer.layer.name
+          title: window.theme_name
         };
       });
       console.log(layerInfo);
@@ -671,10 +677,11 @@
       qt = new esri.tasks.QueryTask(layer_url + centroid_layer);
       def = qt.execute(q);
       values = [];
-      console.log(which);
+      console.log(which, 'pre-callback');
       return def.addCallback((function(values) {
         return function(result) {
           var feature, x, _l, _len2, _m, _ref1, _ref2;
+          console.log('callback', result);
           _ref1 = result.features;
           for (_l = 0, _len2 = _ref1.length; _l < _len2; _l++) {
             feature = _ref1[_l];

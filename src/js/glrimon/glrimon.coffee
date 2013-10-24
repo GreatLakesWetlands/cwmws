@@ -8,15 +8,16 @@ map = {}
 
 window.selected_sites = []
 window.highlighted_sites = []
+window.theme_name = 'geomorph'
 
-layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest002/MapServer"
+layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer"
 
 centroid_layer = "/0"
 boundary_layer = "/1"
 species_table = "/2"
 
-no_definition_query = '1 = 1'
 no_definition_query = '"site" > 0 and "site" < 10000'
+no_definition_query = '1 = 1'
 # getting "Origin <whatever> is not allowed by Access-Control-Allow-Origin."
 # errors, seems to go away if the definition query is set to this instead
 # of ""?
@@ -295,6 +296,8 @@ require([
                     "Draw a rectangle on the map"
         toolbar.activate esri.toolbars.Draw.RECTANGLE
 
+    ### clear_site_selection #######################################################
+
     clear_site_selection = ->
         window.highlighted_sites = []
         window.selected_sites = []
@@ -303,7 +306,7 @@ require([
         centroids.setDefinitionExpression no_definition_query
         sites.setDefinitionExpression no_definition_query
         set_legend "geomorph"  # because other renderers hide sites
-        
+
     ### selected_only ##############################################################
 
     selected_only = (evt, force = false) ->
@@ -330,6 +333,8 @@ require([
     set_legend = (which) ->
 
         renderer = renderers[which]
+        
+        window.theme_name = which
 
         if not renderer
             renderer = make_renderer which
@@ -406,7 +411,7 @@ require([
 
         layerInfo = arrayUtils.map evt.layers, (layer, index) ->
             layer:layer.layer
-            title: layer.layer.name
+            title: window.theme_name # layer.layer.name
             
         console.log layerInfo
             
@@ -739,7 +744,6 @@ require([
         colors = name_lists[which]['colors']
         names = name_lists[which]['names']
         
-        
         q = new esri.tasks.Query()
         q.returnGeometry = false
         q.outFields = [which]
@@ -749,9 +753,12 @@ require([
         def = qt.execute q
 
         values = []
-        console.log which
+        console.log which, 'pre-callback'
         
-        def.addCallback do (values=values) -> (result) ->   
+        def.addCallback do (values=values) -> (result) ->  
+        
+            console.log 'callback', result
+            
             for feature in result.features
                 x = feature.attributes[which].split(' ')[0]
                 if x isnt null and not isNaN(x) and x != ' ' and x != ''
@@ -760,9 +767,9 @@ require([
             console.log values
             
             range = [
-                values.reduce (a,b) -> Math.min a,b
+                values.reduce (a,b) -> Math.min a,b  # two ways
               ,
-                Math.max values...
+                Math.max values...                   # to do this
             ]
             
             steps = colors.length

@@ -53,29 +53,33 @@ drop view if exists glrimon_misc.cwm_site_export;
 create view glrimon_misc.cwm_site_export as
 
 with fish_ibi as (
-select distinct on (site) table_id as site, score
+select table_id as site, avg(regexp_replace(score, ' .*', '', 'g')::float) as score
   from glrimon.fi_ibi_static_score
        join glrimon.fi_ibi_attr using (ibi_attr)
  where table_name = 'Fi_sampling' and
-       fi_ibi_attr.name = 'Site fish IBI total score'
+       fi_ibi_attr.name = 'Site fish IBI total score' and
+       score !~ 'OUT'
+ group by site
 ), 
 
 veg_ibi as (
-select distinct on (site) site, score
+select site, avg(score::float) as score
   from glrimon.fi_ibi_static_score
        join glrimon.fi_ibi_attr using (ibi_attr),
        glrimon.v_sampling
  where table_name = 'V_sampling' and
        fi_ibi_attr.name = 'Veg. IBI'
        and table_id = sampling
+ group by site
 ), 
 
 invert_ibi as (
-select distinct on (site) table_id as site, score
+select table_id as site, avg(regexp_replace(score, ' .*', '', 'g')::float) as score
   from glrimon.fi_ibi_static_score
        join glrimon.fi_ibi_attr using (ibi_attr)
  where table_name = 'Fi_sampling' and
        fi_ibi_attr.name = 'Site invert. IBI total score'
+ group by site
 ),
 
 sample_year as (

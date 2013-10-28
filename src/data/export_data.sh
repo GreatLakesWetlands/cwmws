@@ -14,15 +14,16 @@ rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 echo "-- Exported $(date)" >"$OUT_DIR/00README.TXT"
 
+touch "$OUT_DIR/ WARNING - FOLDER FREQUENTLY DELETED"
 
 # shapefiles
-ogr2ogr -f 'ESRI Shapefile' "$OUT_DIR/sites.shp" "$CONSPEC" \
+ogr2ogr -a_srs EPSG:4326 -f 'ESRI Shapefile' "$OUT_DIR/sites.shp" "$CONSPEC" \
   -sql "
 select glrimon_misc.cwm_site_export.*, simp_geom
   from glrimon_misc.cwm_site_export 
        join glrimon.site using (site)
 "
-ogr2ogr -f 'ESRI Shapefile' "$OUT_DIR/centroids.shp" "$CONSPEC" \
+ogr2ogr -a_srs EPSG:4326 -f 'ESRI Shapefile' "$OUT_DIR/centroids.shp" "$CONSPEC" \
   -sql "
 select glrimon_misc.cwm_site_export.*, st_centroid(Box2D(simp_geom))
   from glrimon_misc.cwm_site_export 

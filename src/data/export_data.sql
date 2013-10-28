@@ -82,6 +82,12 @@ select table_id as site, avg(regexp_replace(score, ' .*', '', 'g')::float) as sc
  group by site
 ),
 
+bird_ibi as (
+select site::int, avg(ibi::float) as score
+  from glrimon_misc.bird_ibi_r_calc
+ group by site
+),
+
 sample_year as (
 
     select site, min(year) as year from (
@@ -126,9 +132,10 @@ spp_data as (
 select site, 
        name, 
        year,
-       veg_ibi.score as veg_ibi,
-       fish_ibi.score as fish_ibi,
-       invert_ibi.score as invert_ibi,
+       veg_ibi.score::float as veg_ibi,
+       bird_ibi.score::float as bird_ibi,
+       fish_ibi.score::float as fish_ibi,
+       invert_ibi.score::float as invert_ibi,
        -- centroid of bbox to match ArcMap centroids
        st_y(st_centroid(Box2D(simp_geom))) as lat,
        st_x(st_centroid(Box2D(simp_geom))) as lon,
@@ -141,6 +148,7 @@ select site,
   from glrimon.site
        join sample_year using (site)
        left join veg_ibi using (site)
+       left join bird_ibi using (site)
        left join fish_ibi using (site)
        left join invert_ibi using (site)
        left join spp_data using (site)

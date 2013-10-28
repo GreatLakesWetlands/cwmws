@@ -28,15 +28,15 @@
 
   species_table = "/2";
 
-  no_definition_query = '"site" > 0 and "site" < 10000';
-
   no_definition_query = '1 = 1';
+
+  no_definition_query = '"site" > 0 and "site" < 10000';
 
   /* main
   */
 
 
-  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', 'esri/symbols/SimpleFillSymbol', 'esri/toolbars/draw', 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'esri/dijit/Measurement', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'esri/layers/ImageParameters', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dojo/query', 'dijit/Dialog', 'dijit/form/TextBox', 'dijit/form/Button', "dijit/form/CheckBox", "dijit/form/Select", "dijit/form/RadioButton", 'dijit/layout/BorderContainer', 'esri/config', 'esri/sniff', 'esri/SnappingManager', 'esri/tasks/GeometryService', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Textarea', 'esri/dijit/Scalebar', 'dijit/form/CheckBox', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, Query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Draw, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, Measurement, domClass, domConstruct, dojo_on, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, ImageParameters, number, dom, JSON, registry, dojo_query, Dialog, TextBox, Button, CheckBox, Select, RadioButton, BorderContainer, esriConfig, has, SnappingManager, GeometryService) {
+  require(['esri/map', 'esri/layers/ArcGISDynamicMapServiceLayer', 'esri/layers/WMSLayer', 'esri/layers/FeatureLayer', 'esri/dijit/Legend', 'esri/tasks/query', 'esri/layers/LayerDrawingOptions', 'esri/renderers/SimpleRenderer', 'esri/renderers/UniqueValueRenderer', 'esri/renderers/ClassBreaksRenderer', 'esri/symbols/SimpleMarkerSymbol', 'esri/symbols/SimpleLineSymbol', 'esri/symbols/SimpleFillSymbol', 'esri/toolbars/draw', 'dojo/_base/Color', 'dojo/_base/array', 'dojo/parser', 'esri/dijit/BasemapGallery', 'esri/arcgis/utils', 'esri/dijit/Popup', 'esri/dijit/PopupTemplate', 'esri/dijit/Measurement', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-attr', 'dojo/on', 'dojo/keys', 'dojox/charting/Chart', 'dojox/charting/themes/Dollar', 'esri/tasks/locator', 'esri/SpatialReference', 'esri/graphic', 'esri/symbols/Font', 'esri/symbols/TextSymbol', 'esri/geometry/Point', 'esri/geometry/Extent', 'esri/geometry/webMercatorUtils', 'esri/layers/ImageParameters', 'dojo/number', 'dojo/dom', 'dojo/json', 'dijit/registry', 'dojo/query', 'dijit/Dialog', 'dijit/form/TextBox', 'dijit/form/Button', "dijit/form/CheckBox", "dijit/form/Select", "dijit/form/RadioButton", 'dijit/layout/BorderContainer', 'esri/config', 'esri/sniff', 'esri/SnappingManager', 'esri/tasks/GeometryService', 'dijit/layout/ContentPane', 'dijit/layout/AccordionContainer', 'dijit/TitlePane', 'dijit/form/Textarea', 'esri/dijit/Scalebar', 'dijit/form/CheckBox', 'dojo/domReady!'], function(Map, ArcGISDynamicMapServiceLayer, WMSLayer, FeatureLayer, Legend, Query, LayerDrawingOptions, SimpleRenderer, UniqueValueRenderer, ClassBreaksRenderer, SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol, Draw, Color, arrayUtils, parser, BasemapGallery, arcgisUtils, Popup, PopupTemplate, Measurement, domClass, domConstruct, domAttr, dojo_on, Keys, Chart, theme, Locator, SpatialReference, Graphic, Font, TextSymbol, Point, Extent, webMercatorUtils, ImageParameters, number, dom, JSON, registry, dojo_query, Dialog, TextBox, Button, CheckBox, Select, RadioButton, BorderContainer, esriConfig, has, SnappingManager, GeometryService) {
     /* setup misc
     */
 
@@ -357,10 +357,9 @@
       layerInfo = arrayUtils.map(evt.layers, function(layer, index) {
         return {
           layer: layer.layer,
-          title: window.theme_name
+          title: layer.layer.name
         };
       });
-      console.log(layerInfo);
       if (layerInfo.length > 0) {
         legendDijit = new Legend({
           map: map,
@@ -370,7 +369,6 @@
         return map.legend = legendDijit;
       }
     };
-    map.on("layers-add-result", do_legend);
     /* set up layer picker - map layer version
     */
 
@@ -645,31 +643,39 @@
         stop = range[0] + (i + 1) * step;
       }
       breaks_renderer.addBreak(start, stop, new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 8, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([100, 100, 100]), 1), new Color(colors[i])));
-      console.log(start, stop, colors[i]);
     }
     /* make_renderer
     */
 
     make_renderer = function(which) {
-      var def, name_lists, names, q, qt;
+      var def, mode, name_lists, names, q, qt;
       breaks_renderer = new ClassBreaksRenderer(null, which);
       colors = [[163, 0, 0], [254, 0, 0], [255, 191, 0], [255, 255, 0], [195, 255, 195], [2, 194, 0], [1, 100, 0]];
       name_lists = {
         fish_ibi: {
           names: ["Highly degraded", "Degraded", "Moderately impacted", "Reference"],
-          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0]]
+          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0]],
+          mode: 'as is'
         },
         invert_ibi: {
           names: ["Degraded", "Moderately degraded", "Moderately impacted", "Mildly impacted", "Reference"],
-          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0], [1, 100, 0]]
+          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0], [1, 100, 0]],
+          mode: 'as is'
         },
         veg_ibi: {
           names: ["Lowest score", " ", " ", " ", "Highest score"],
-          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0], [1, 100, 0]]
+          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0], [1, 100, 0]],
+          mode: 'as is'
+        },
+        bird_ibi: {
+          names: ["Lowest score", " ", " ", " ", "Highest score"],
+          colors: [[254, 0, 0], [255, 191, 0], [255, 255, 0], [2, 194, 0], [1, 100, 0]],
+          mode: 'quintile'
         }
       };
       colors = name_lists[which]['colors'];
       names = name_lists[which]['names'];
+      mode = name_lists[which]['mode'];
       if (centroids.getDefinitionExpression() !== no_definition_query) {
         colors = name_lists['veg_ibi']['colors'];
         names = name_lists['veg_ibi']['names'];
@@ -680,52 +686,84 @@
       q.where = centroids.getDefinitionExpression();
       qt = new esri.tasks.QueryTask(layer_url + centroid_layer);
       def = qt.execute(q);
-      console.log(which, 'pre-callback');
-      return def.addCallback((function(colors, names, which) {
+      return def.addCallback((function(colors, names, which, mode) {
         return function(result) {
-          var feature, values, x, _l, _len2, _m, _ref1, _ref2;
+          var break_, breaks, feature, values, x, _l, _len2, _len3, _m, _n, _o, _ref1, _ref2, _ref3;
           values = [];
           _ref1 = result.features;
           for (_l = 0, _len2 = _ref1.length; _l < _len2; _l++) {
             feature = _ref1[_l];
             x = feature.attributes[which];
             if (x !== null && !isNaN(x) && x > 0) {
-              console.log(x);
-              values.push(x);
+              values.push(parseFloat(x));
             }
           }
-          range = [
-            values.reduce(function(a, b) {
-              return Math.min(a, b);
-            }), Math.max.apply(Math, values)
-          ];
-          steps = colors.length;
-          step = (range[1] - range[0]) / steps;
-          for (i = _m = 0, _ref2 = steps - 1; 0 <= _ref2 ? _m <= _ref2 : _m >= _ref2; i = 0 <= _ref2 ? ++_m : --_m) {
-            if (i === 0) {
-              start = 0.0001;
-              stop = range[0] + (i + 1) * step;
-            } else if (i === steps - 1) {
-              start = range[0] + i * step;
-              stop = +Infinity;
-            } else {
-              start = range[0] + i * step;
-              stop = range[0] + (i + 1) * step;
+          breaks = [];
+          if (mode !== 'quintile') {
+            range = [
+              values.reduce(function(a, b) {
+                return Math.min(a, b);
+              }), Math.max.apply(Math, values)
+            ];
+            steps = colors.length;
+            step = (range[1] - range[0]) / steps;
+            for (i = _m = 0, _ref2 = steps - 1; 0 <= _ref2 ? _m <= _ref2 : _m >= _ref2; i = 0 <= _ref2 ? ++_m : --_m) {
+              if (i === 0) {
+                start = 0.0001;
+                stop = range[0] + (i + 1) * step;
+              } else if (i === steps - 1) {
+                start = range[0] + i * step;
+                stop = +Infinity;
+              } else {
+                start = range[0] + i * step;
+                stop = range[0] + (i + 1) * step;
+              }
+              breaks.push({
+                start: start,
+                stop: stop,
+                name: names[i],
+                color: colors[i]
+              });
             }
-            breaks_renderer.addBreak({
-              minValue: start,
-              maxValue: stop,
-              symbol: new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([100, 100, 100]), 1), new Color(colors[i])),
-              label: names[i]
+          } else {
+            steps = colors.length;
+            values.sort(function(a, b) {
+              return a - b;
             });
-            console.log(start, stop, colors[i]);
+            step = values.length / 5.0;
+            for (i = _n = 0, _ref3 = steps - 1; 0 <= _ref3 ? _n <= _ref3 : _n >= _ref3; i = 0 <= _ref3 ? ++_n : --_n) {
+              if (i === 0) {
+                start = 0.0001;
+                stop = values[Math.floor((i + 1) * step)];
+              } else if (i === steps - 1) {
+                start = values[Math.floor(i * step)];
+                stop = +Infinity;
+              } else {
+                start = values[Math.floor(i * step)];
+                stop = values[Math.floor((i + 1) * step)];
+              }
+              breaks.push({
+                start: start,
+                stop: stop,
+                name: names[i],
+                color: colors[i]
+              });
+            }
+          }
+          for (_o = 0, _len3 = breaks.length; _o < _len3; _o++) {
+            break_ = breaks[_o];
+            breaks_renderer.addBreak({
+              minValue: break_.start,
+              maxValue: break_.stop,
+              symbol: new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([100, 100, 100]), 1), new Color(break_.color)),
+              label: break_.name
+            });
           }
           centroids.setRenderer(breaks_renderer);
           centroids.hide();
-          centroids.show();
-          return breaks_renderer;
+          return centroids.show();
         };
-      })(colors, names, which));
+      })(colors, names, which, mode));
     };
     /* load layers
     */
@@ -769,6 +807,7 @@
     registry.byId("legend-redo").on("click", function() {
       return set_legend(registry.byId("legend-pick").get('value'));
     });
+    map.on("layers-add-result", do_legend);
     map.on('load', function(evt) {
       var m;
       m = new Measurement({

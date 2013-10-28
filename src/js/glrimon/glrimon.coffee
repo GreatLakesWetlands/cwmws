@@ -16,8 +16,8 @@ centroid_layer = "/0"
 boundary_layer = "/1"
 species_table = "/2"
 
-no_definition_query = '"site" > 0 and "site" < 10000'
 no_definition_query = '1 = 1'
+no_definition_query = '"site" > 0 and "site" < 10000'
 # getting "Origin <whatever> is not allowed by Access-Control-Allow-Origin."
 # errors, seems to go away if the definition query is set to this instead
 # of ""?
@@ -51,6 +51,7 @@ require([
     'esri/dijit/Measurement',
     'dojo/dom-class',
     'dojo/dom-construct',
+    'dojo/dom-attr',
     'dojo/on',
     'dojo/keys',
     'dojox/charting/Chart',
@@ -112,6 +113,7 @@ require([
     Measurement,
     domClass,
     domConstruct,
+    domAttr,
     dojo_on,
     Keys,
     Chart,
@@ -411,10 +413,8 @@ require([
 
         layerInfo = arrayUtils.map evt.layers, (layer, index) ->
             layer:layer.layer
-            title: window.theme_name # layer.layer.name
-            
-        console.log layerInfo
-            
+            title: layer.layer.name # window.theme_name
+        
         if layerInfo.length > 0
             legendDijit = new Legend 
                 map: map
@@ -423,8 +423,6 @@ require([
                 "legendDiv"
             legendDijit.startup()
             map.legend = legendDijit
-
-    map.on "layers-add-result", do_legend
     ### set up layer picker - map layer version ####################################
 
     ###
@@ -677,9 +675,6 @@ require([
                 new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
                     new Color([100,100,100]), 1,
                 new Color(colors[i])
-                
-        console.log start, stop, colors[i]
-
     ### make_renderer ########################################################
 
     make_renderer = (which) ->
@@ -709,6 +704,7 @@ require([
                     [255,255,0],
                     [2,194,0],
                     ]
+                mode: 'as is'
 
             invert_ibi: 
                 names: [
@@ -725,6 +721,8 @@ require([
                     [2,194,0],
                     [1,100,0],
                     ]
+                mode: 'as is'
+
             veg_ibi: 
                 names: [
                     "Lowest score",
@@ -740,9 +738,28 @@ require([
                     [2,194,0],
                     [1,100,0],
                     ]
-
+                mode: 'as is'
+                
+            bird_ibi: 
+                names: [
+                    "Lowest score",
+                    " ",
+                    " ",
+                    " ",
+                    "Highest score",
+                    ]
+                colors: [
+                    [254,0,0],
+                    [255,191,0],
+                    [255,255,0],
+                    [2,194,0],
+                    [1,100,0],
+                    ]
+                mode: 'quintile'
+        
         colors = name_lists[which]['colors']
         names = name_lists[which]['names']
+        mode = name_lists[which]['mode']
         
         if centroids.getDefinitionExpression() != no_definition_query
             # don't use the explicit names
@@ -757,9 +774,7 @@ require([
         qt = new esri.tasks.QueryTask layer_url + centroid_layer
         def = qt.execute q
 
-        console.log which, 'pre-callback'
-        
-        def.addCallback do (colors=colors, names=names, which=which) -> (result) ->  
+        def.addCallback do (colors=colors, names=names, which=which, mode=mode) -> (result) ->  
         
             values = []
             
@@ -767,46 +782,75 @@ require([
                 x = feature.attributes[which]
                 if x isnt null and not isNaN(x) and x > 0
                     # Grrr, ArcGIS is translating null to zero
-                    console.log x
-                    values.push x
-            
-            range = [
-                values.reduce (a,b) -> Math.min a,b  # two ways
-              ,
-                Math.max values...                   # to do this
-            ]
-            
-            steps = colors.length
-            step = (range[1] - range[0]) / steps
-            for i in [0..steps-1]
-                if i == 0
-                    start = 0.0001 # -Infinity
-                    stop = range[0]+(i+1)*step
-                else if i == steps - 1
-                    start = range[0]+i*step
-                    stop = +Infinity
-                else
-                    start = range[0]+i*step
-                    stop = range[0]+(i+1)*step
-                
+                    values.push parseFloat(x)
+                    
+            breaks = []
+                    
+            if mode != 'quintile'
+                range = [
+                    values.reduce (a,b) -> Math.min a,b  # two ways
+                  ,
+                    Math.max values...                   # to do this
+                ]
+                steps = colors.length
+                step = (range[1] - range[0]) / steps
+                for i in [0..steps-1]
+                    if i == 0
+                        start = 0.0001 # -Infinity
+                        stop = range[0]+(i+1)*step
+                    else if i == steps - 1
+                        start = range[0]+i*step
+                        stop = +Infinity
+                    else
+                        start = range[0]+i*step
+                        stop = range[0]+(i+1)*step
+                    breaks.push
+                        start: start
+                        stop: stop
+                        name: names[i]
+                        color: colors[i]
+            else
+                steps = colors.length
+                values.sort (a,b) -> a - b
+                step = values.length / 5.0
+                for i in [0..steps-1]
+                    if i == 0
+                        start = 0.0001 # -Infinity
+                        stop = values[Math.floor((i+1)*step)]
+                    else if i == steps - 1
+                        start = values[Math.floor((i)*step)]
+                        stop = +Infinity
+                    else
+                        start = values[Math.floor((i)*step)]
+                        stop = values[Math.floor((i+1)*step)]
+                    breaks.push
+                        start: start
+                        stop: stop
+                        name: names[i]
+                        color: colors[i]
+                        
+            for break_ in breaks
+                    
                 breaks_renderer.addBreak 
-                    minValue: start
-                    maxValue: stop
+                    minValue: break_.start
+                    maxValue: break_.stop
                     symbol:
                         new SimpleMarkerSymbol SimpleMarkerSymbol.STYLE_CIRCLE, 10,
                             new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
                                 new Color([100,100,100]), 1,
-                            new Color(colors[i])
-                    label: names[i]
-                        
-                console.log start, stop, colors[i]
+                            new Color(break_.color)
+                    label: break_.name
                 
             centroids.setRenderer(breaks_renderer)
         
             centroids.hide()
             centroids.show()
-                
-            return breaks_renderer
+            
+            #X dojo_query('#legendDiv')[0].innerHTML = ''
+            #X domAttr.remove(dojo_query('#legendDiv')[0], 'widgetid')
+            #X console.log dojo_query('#legendDiv')
+            #X do_legend
+            #X     layers: [centroids, sites]
             
     ### load layers ################################################################
 
@@ -851,6 +895,8 @@ require([
         set_legend registry.byId("legend-pick").get('value')
     registry.byId("legend-redo").on "click", ->
         set_legend registry.byId("legend-pick").get('value')
+
+    map.on "layers-add-result", do_legend
 
     map.on 'load', (evt) ->
         m = new Measurement map: evt.map, 'measurement'

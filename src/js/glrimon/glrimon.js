@@ -28,9 +28,9 @@
 
   species_table = "/2";
 
-  no_definition_query = '1 = 1';
-
   no_definition_query = '"site" > 0 and "site" < 10000';
+
+  no_definition_query = '1 = 1';
 
   /* main
   */
@@ -65,6 +65,8 @@
       q.outFields = ["*"];
       q.geometry = queryGeom;
       q.where = centroids.getDefinitionExpression();
+      console.log(q);
+      console.log(sites);
       popupTemplate = new esri.dijit.PopupTemplate({
         title: "{site}",
         fieldInfos: [

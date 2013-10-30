@@ -16,8 +16,8 @@ centroid_layer = "/0"
 boundary_layer = "/1"
 species_table = "/2"
 
-no_definition_query = '1 = 1'
 no_definition_query = '"site" > 0 and "site" < 10000'
+no_definition_query = '1 = 1'
 # getting "Origin <whatever> is not allowed by Access-Control-Allow-Origin."
 # errors, seems to go away if the definition query is set to this instead
 # of ""?
@@ -178,6 +178,11 @@ require([
         q.geometry = queryGeom
         
         q.where = centroids.getDefinitionExpression()
+        
+        console.log q
+        console.log sites
+        
+        
 
         popupTemplate = new esri.dijit.PopupTemplate
             title: "{site}"

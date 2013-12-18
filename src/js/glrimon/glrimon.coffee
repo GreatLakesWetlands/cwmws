@@ -10,7 +10,9 @@ window.selected_sites = []
 window.highlighted_sites = []
 window.theme_name = 'geomorph'
 
-layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer"
+protocol = 'http:'
+
+layer_url = protocol+"//umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer"
 
 centroid_layer = "/0"
 boundary_layer = "/1"
@@ -200,13 +202,20 @@ require([
             ]
 
         qt = new esri.tasks.QueryTask layer_url + boundary_layer
-        def = qt.execute q
-        def.addCallback (result) ->
-
+        
+        ok = (result) ->
+            console.log 'RS', error
             dojo.map result.features, (f) ->
                 f.setInfoTemplate popupTemplate
                 return f
-
+                
+        err = (error) ->
+            console.log 'ER', error
+            
+        def = qt.execute q
+        def.addCallback ok
+        def.addErrback err
+        
         map.infoWindow.setFeatures [def]
         # show the popup
         map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
@@ -496,7 +505,7 @@ require([
 
     ### find address / site ########################################################
 
-    locator = new Locator         "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
+    locator = new Locator protocol+"//geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
 
     locate = (address, status) ->
         

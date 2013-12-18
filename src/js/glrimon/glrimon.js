@@ -9,7 +9,7 @@
 
 
 (function() {
-  var boundary_layer, centroid_layer, layer_url, map, no_definition_query, species_table,
+  var boundary_layer, centroid_layer, layer_url, map, no_definition_query, protocol, species_table,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   map = {};
@@ -20,7 +20,9 @@
 
   window.theme_name = 'geomorph';
 
-  layer_url = "http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer";
+  protocol = 'http:';
+
+  layer_url = protocol + "//umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer";
 
   centroid_layer = "/0";
 
@@ -54,7 +56,7 @@
       /* query server for sites near mouseclick
       */
 
-      var def, pad, popupTemplate, q, qt, queryGeom;
+      var def, err, ok, pad, popupTemplate, q, qt, queryGeom;
       pad = map.extent.getWidth() / map.width * 5;
       queryGeom = new esri.geometry.Extent(e.mapPoint.x - pad, e.mapPoint.y - pad, e.mapPoint.x + pad, e.mapPoint.y + pad, map.spatialReference);
       q = new esri.tasks.Query();
@@ -120,13 +122,19 @@
         ]
       });
       qt = new esri.tasks.QueryTask(layer_url + boundary_layer);
-      def = qt.execute(q);
-      def.addCallback(function(result) {
+      ok = function(result) {
+        console.log('RS', error);
         return dojo.map(result.features, function(f) {
           f.setInfoTemplate(popupTemplate);
           return f;
         });
-      });
+      };
+      err = function(error) {
+        return console.log('ER', error);
+      };
+      def = qt.execute(q);
+      def.addCallback(ok);
+      def.addErrback(err);
       map.infoWindow.setFeatures([def]);
       return map.infoWindow.show(e.screenPoint, map.getInfoWindowAnchor(e.screenPoint));
     };
@@ -455,7 +463,7 @@
     /* find address / site
     */
 
-    locator = new Locator("http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
+    locator = new Locator(protocol + "//geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
     locate = function(address, status) {
       var c, def, non_digit, q, qt, _i, _len;
       status.innerHTML = 'Searching...';

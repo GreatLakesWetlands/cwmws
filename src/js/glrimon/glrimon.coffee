@@ -202,20 +202,13 @@ require([
             ]
 
         qt = new esri.tasks.QueryTask layer_url + boundary_layer
-        
-        ok = (result) ->
-            console.log 'RS', error
+        def = qt.execute q
+        def.addCallback (result) ->
+
             dojo.map result.features, (f) ->
                 f.setInfoTemplate popupTemplate
                 return f
-                
-        err = (error) ->
-            console.log 'ER', error
-            
-        def = qt.execute q
-        def.addCallback ok
-        def.addErrback err
-        
+
         map.infoWindow.setFeatures [def]
         # show the popup
         map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint

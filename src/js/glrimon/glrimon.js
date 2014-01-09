@@ -56,7 +56,7 @@
       /* query server for sites near mouseclick
       */
 
-      var def, err, ok, pad, popupTemplate, q, qt, queryGeom;
+      var def, pad, popupTemplate, q, qt, queryGeom;
       pad = map.extent.getWidth() / map.width * 5;
       queryGeom = new esri.geometry.Extent(e.mapPoint.x - pad, e.mapPoint.y - pad, e.mapPoint.x + pad, e.mapPoint.y + pad, map.spatialReference);
       q = new esri.tasks.Query();
@@ -122,19 +122,13 @@
         ]
       });
       qt = new esri.tasks.QueryTask(layer_url + boundary_layer);
-      ok = function(result) {
-        console.log('RS', error);
+      def = qt.execute(q);
+      def.addCallback(function(result) {
         return dojo.map(result.features, function(f) {
           f.setInfoTemplate(popupTemplate);
           return f;
         });
-      };
-      err = function(error) {
-        return console.log('ER', error);
-      };
-      def = qt.execute(q);
-      def.addCallback(ok);
-      def.addErrback(err);
+      });
       map.infoWindow.setFeatures([def]);
       return map.infoWindow.show(e.screenPoint, map.getInfoWindowAnchor(e.screenPoint));
     };

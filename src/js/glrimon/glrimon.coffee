@@ -12,7 +12,7 @@ window.theme_name = 'geomorph'
 
 protocol = 'http:'
 
-layer_url = protocol+"//umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer"
+layer_url = protocol+"//127.0.0.1:8000/gis/arcgis/rest/services/NRRI/glritest003/MapServer"
 
 centroid_layer = "/0"
 boundary_layer = "/1"

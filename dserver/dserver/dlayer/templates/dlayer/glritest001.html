@@ -10,10 +10,10 @@
 
   <link rel="stylesheet" href="//js.arcgis.com/3.6/js/dojo/dijit/themes/tundra/tundra.css">
   <link rel="stylesheet" href="//js.arcgis.com/3.6/js/esri/css/esri.css">
-  <link rel="stylesheet" href="../css/glrimon.css">
+  <link rel="stylesheet" href="{{STATIC_URL}}dlayer/css/glrimon.css">
 
   <script src="//js.arcgis.com/3.6/"></script>
-  <script src="../js/glrimon/glrimon.js"></script>
+  <script src="{{STATIC_URL}}dlayer/js/glrimon.js"></script>
 </head>
 
 <body class="tundra">
@@ -43,6 +43,7 @@
                     
                     <hr/>
                     
+                    {% if level >= levels.agency %}
                     <div>Select sites: 
                     <button id="select-rect" data-dojo-type="dijit/form/Button">
                         by Rectangle</button>
@@ -51,21 +52,26 @@
                     
                     <button id="select-clear" data-dojo-type="dijit/form/Button">
                         Reset</button>
-                    <p id='select_results'>No sites selected.</p></div>
+                    <p id='select_results'>No sites selected.</p>
+                    </div>
+                    {% endif %}
                     
                     <div>Color sites by:
                     <select id='legend-pick' data-dojo-type="dijit/form/Select">
                         <option value='geomorph'>Geomorph</option>
                         <option value='samp_year'>Sampling year</option>
+                        {% if level >= levels.agency %}
                         <option value='bird_ibi'>Bird IBI</option>
                         <option value='fish_ibi'>Fish IBI</option>
                         <option value='invert_ibi'>Invert. IBI</option>
                         <option value='veg_ibi'>Veg. IBI</option>
+                        {% endif %}
                     </select>
                     <button id="legend-redo"  data-dojo-type="dijit/form/Button">re-do
                     </button>
                     </div>                        
                     
+                    {% if level >= levels.agency %}
                     <div>
                     <div><button id="show-only"  data-dojo-type="dijit/form/Button">Select</button> only sites with data for </div>
                     <div><input id='spp_any' value='spp_any' name='spp_sel' checked='1'
@@ -79,6 +85,7 @@
                     <div><input id='i_invertebrate' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_invertebrate'>invertebrate</label></div>
                     <div><input id='i_plant' type='checkbox' data-dojo-type="dijit/form/CheckBox"/><label for='i_plant'>plant</label></div>
                     </div>
+                    {% endif %}
             </div>
 
                    

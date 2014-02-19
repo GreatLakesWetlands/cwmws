@@ -1,4 +1,4 @@
-# /usr/bin/coffee -cw js/glrimon/glrimon.coffee &
+# /usr/bin/coffee -cw glrimon.coffee &
 
 ### replace .js with .coffee for original source ###
 
@@ -12,7 +12,7 @@ window.theme_name = 'geomorph'
 
 protocol = 'http:'
 
-layer_url = protocol+"//127.0.0.1:8000/gis/arcgis/rest/services/NRRI/glritest003/MapServer"
+layer_url = protocol+"//127.0.0.1:8000/map/gis/arcgis/rest/services/NRRI/glritest003/MapServer"
 
 centroid_layer = "/0"
 boundary_layer = "/1"
@@ -892,11 +892,14 @@ require([
     basemapGallery.on 'selection-change', -> 
         registry.byId("basemap-gallery-pane").toggle()
 
-    registry.byId("select-clear").on "click", clear_site_selection
-    registry.byId("select-rect").on "click", -> select 'rectangle' 
-    registry.byId("select-only").on "click", selected_only
+    # may or may not exist depending on user level
+    if registry.byId("select-clear")
+        registry.byId("select-clear").on "click", clear_site_selection
+        registry.byId("select-rect").on "click", -> select 'rectangle' 
+        registry.byId("select-only").on "click", selected_only
 
-    registry.byId("show-only").on "click", show_only
+    if registry.byId("show-only")
+        registry.byId("show-only").on "click", show_only
 
     registry.byId("legend-pick").on "change", ->
         set_legend registry.byId("legend-pick").get('value')

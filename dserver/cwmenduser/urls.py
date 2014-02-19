@@ -21,6 +21,8 @@ urlpatterns = i18n_patterns("",
 
 urlpatterns += patterns('',
 
+    url("^map/", include("dlayer.urls")),
+
     # We don't want to presume how your homepage works, so here are a
     # few patterns you can use to set it up.
 

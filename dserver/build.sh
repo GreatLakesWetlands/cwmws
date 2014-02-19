@@ -3,6 +3,11 @@ mkdir -p "$BASE_DIR"
 cd "$BASE_DIR"
 virtualenv --python=python3 venv
 . venv/bin/activate
+
+MODE="MEZZ"
+
+if [ "$MODE" = "DJANGO" ]; then
+
 pip install django
 if [ `which django-admin.py` == \
      `readlink -f $BASE_DIR/venv/bin/django-admin.py` ]; then
@@ -16,3 +21,12 @@ cd dserver
 python manage.py syncdb --noinput
 python manage.py createsuperuser
 python manage.py startapp dlayer
+
+else
+
+pip install mezzanine
+mezzanine-project cwmenduser
+cd cwmenduser
+python manage.py createdb
+
+fi

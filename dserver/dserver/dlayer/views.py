@@ -1,6 +1,17 @@
 from django.shortcuts import HttpResponse, render_to_response, RequestContext
 
 import urllib
+
+access_levels = {
+    'public': 0,
+    'agency': 10,
+    'collaborator': 20,
+    'researcher': 30,
+    'corepi': 40,
+    'dev': 100,
+}
+
+USER_LEVEL = 0
 def gis(request):
     """gis - proxy an ArcGIS request
 
@@ -22,17 +33,11 @@ def map(request):
     :Parameters:
     - `request`: request
     """
-    
+
     return render_to_response("dlayer/glritest001.html",
         {
-            'level': 0,
-            'levels': {
-                'public': 0,
-                'agency': 10,
-                'researcher': 20,
-                'corepi': 30,
-                'dev': 100,
-            }
+            'level': USER_LEVEL,
+            'levels': access_levels,
         },
         RequestContext(request))
 def js(request):
@@ -42,16 +47,12 @@ def js(request):
     - `request`: request
     """
     
-    return render_to_response("dlayer/js/glrimon.js",
+    response = render_to_response("dlayer/js/glrimon.js",
         {
-            'level': 0,
-            'levels': {
-                'public': 0,
-                'agency': 10,
-                'researcher': 20,
-                'corepi': 30,
-                'dev': 100,
-            }
+            'level': USER_LEVEL,
+            'levels': access_levels,
         },
         RequestContext(request))
+    response["Content-type"] = "text/plain"
+    return response
 # Create your views here.

@@ -1,7 +1,5 @@
 # /usr/bin/coffee -cw glrimon.coffee &
 
-### replace .js with .coffee for original source ###
-
 ### setup ######################################################################
 
 map = {}
@@ -220,6 +218,38 @@ require([
         # show the popup
         map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
 
+    ### set_legend #################################################################
+
+    set_legend = (which) ->
+
+        renderer = renderers[which]
+        
+        window.theme_name = which
+
+        if not renderer
+            renderer = make_renderer which
+        else
+            centroids.setRenderer(renderer)
+            map.removeLayer(centroids)
+            map.addLayer(centroids)
+            centroids.hide()
+            centroids.show()
+    ### create map #################################################################
+
+    map = new Map "map",
+        slider: true
+        sliderStyle: "large"
+        basemap:"topo"
+        center: [-84, 45]
+        zoom: 6
+        infoWindow: popup
+        minScale: 10000000
+
+    map.markers = []
+    ### address locator graphics markers ###
+
+    ### {% if level >= levels.agency %} ###
+
     ### show_species ###############################################################
 
     show_species = (evt) ->
@@ -344,22 +374,6 @@ require([
 
         map.graphics.clear()
         window.highlighted_sites = []
-    ### set_legend #################################################################
-
-    set_legend = (which) ->
-
-        renderer = renderers[which]
-        
-        window.theme_name = which
-
-        if not renderer
-            renderer = make_renderer which
-        else
-            centroids.setRenderer(renderer)
-            map.removeLayer(centroids)
-            map.addLayer(centroids)
-            centroids.hide()
-            centroids.show()
     ### show_only ##################################################################
 
     show_only = ->
@@ -395,21 +409,6 @@ require([
 
             selected_only(evt=null, force=true)
             
-    ### create map #################################################################
-
-    map = new Map "map",
-        slider: true
-        sliderStyle: "large"
-        basemap:"topo"
-        center: [-84, 45]
-        zoom: 6
-        infoWindow: popup
-        minScale: 10000000
-
-    map.markers = []
-    ### address locator graphics markers ###
-
-    ### {% if level >= levels.agency %} ###
     ### links from popup ###########################################################
 
     link = domConstruct.create "a",

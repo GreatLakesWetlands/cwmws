@@ -142,6 +142,42 @@
       map.infoWindow.setFeatures([def]);
       return map.infoWindow.show(e.screenPoint, map.getInfoWindowAnchor(e.screenPoint));
     };
+    /* set_legend
+    */
+
+    set_legend = function(which) {
+      var renderer;
+      renderer = renderers[which];
+      window.theme_name = which;
+      if (!renderer) {
+        return renderer = make_renderer(which);
+      } else {
+        centroids.setRenderer(renderer);
+        map.removeLayer(centroids);
+        map.addLayer(centroids);
+        centroids.hide();
+        return centroids.show();
+      }
+    };
+    /* create map
+    */
+
+    map = new Map("map", {
+      slider: true,
+      sliderStyle: "large",
+      basemap: "topo",
+      center: [-84, 45],
+      zoom: 6,
+      infoWindow: popup,
+      minScale: 10000000
+    });
+    map.markers = [];
+    /* address locator graphics markers
+    */
+
+    /* {% if level >= levels.agency %}
+    */
+
     /* show_species
     */
 
@@ -265,23 +301,6 @@
       map.graphics.clear();
       return window.highlighted_sites = [];
     };
-    /* set_legend
-    */
-
-    set_legend = function(which) {
-      var renderer;
-      renderer = renderers[which];
-      window.theme_name = which;
-      if (!renderer) {
-        return renderer = make_renderer(which);
-      } else {
-        centroids.setRenderer(renderer);
-        map.removeLayer(centroids);
-        map.addLayer(centroids);
-        centroids.hide();
-        return centroids.show();
-      }
-    };
     /* show_only
     */
 
@@ -337,25 +356,6 @@
         return selected_only(evt = null, force = true);
       });
     };
-    /* create map
-    */
-
-    map = new Map("map", {
-      slider: true,
-      sliderStyle: "large",
-      basemap: "topo",
-      center: [-84, 45],
-      zoom: 6,
-      infoWindow: popup,
-      minScale: 10000000
-    });
-    map.markers = [];
-    /* address locator graphics markers
-    */
-
-    /* {% if level >= levels.agency %}
-    */
-
     /* links from popup
     */
 

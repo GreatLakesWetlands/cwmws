@@ -1,0 +1,16 @@
+00_FILE_DESCRIPTIONS.txt
+  This file.
+
+attic
+  Misc. things kept just in case.
+
+dserver
+  Django layer for esriapp
+
+src
+  Original Django free html/css/coffee ArcGIS code
+
+(no description needed)
+  .git
+  .gitignore
+

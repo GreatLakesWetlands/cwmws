@@ -1,0 +1,21 @@
+00_FILE_DESCRIPTIONS.txt
+  This file.
+
+build.sh
+  virtualenv / pip / Django / Mezzanine build script
+
+cwmenduser
+  A Mezzanine Django project to run dserver/dlayer (symlinked from cwmenduser)
+  and provide context pages.
+
+dserver/dlayer
+  Django app. to run ESRI map, see `dserver`
+
+dserver
+  dserver and dserver/dserver are a vanilla Django project dropped in
+  favor of the cwmenduser Mezzanine project, but dserver/dlayer is
+  the Django app. which will run the map.
+
+venv
+  virtualenv python environment for this app.
+

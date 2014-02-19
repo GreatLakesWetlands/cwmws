@@ -35,4 +35,23 @@ def map(request):
             }
         },
         RequestContext(request))
+def js(request):
+    """js - render js through a template
+
+    :Parameters:
+    - `request`: request
+    """
+    
+    return render_to_response("dlayer/js/glrimon.js",
+        {
+            'level': 0,
+            'levels': {
+                'public': 0,
+                'agency': 10,
+                'researcher': 20,
+                'corepi': 30,
+                'dev': 100,
+            }
+        },
+        RequestContext(request))
 # Create your views here.

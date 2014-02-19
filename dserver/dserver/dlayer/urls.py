@@ -6,6 +6,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
 
     url(r'^gis/', 'dlayer.views.gis'),
+    url(r'^js/', 'dlayer.views.js'),
     url(r'^', 'dlayer.views.map'),
     
 )

@@ -184,22 +184,29 @@ require([
         console.log q
         console.log sites
         
-        
+        fieldInfos = [
+            { fieldName: "site", visible: true, label: "site: " },
+            { fieldName: "name", visible: true, label: "name: " },
+            { fieldName: "geomorph", visible: true, label: "geomorph: " },
+            { fieldName: "lat", visible: true, label: "lat: ", format: places: 6 },
+            { fieldName: "lon", visible: true, label: "lon: ", format: places: 6 },
+            { fieldName: "year", visible: true, label: "year: " },
+        ]
+
+        ### {% if level >= levels.agency %} ###
+        fieldInfos = fieldInfos.concat [
+            { fieldName: "bird_ibi", visible: true, label: "bird_ibi: " },
+            { fieldName: "fish_ibi", visible: true, label: "fish_ibi: " },
+            { fieldName: "invert_ibi", visible: true, label: "invert_ibi: " },
+            { fieldName: "veg_ibi", visible: true, label: "veg_ibi: " },
+        ]
+        ### {% endif %} ###
 
         popupTemplate = new esri.dijit.PopupTemplate
+            fieldInfos: fieldInfos
             title: "{site}"
-            fieldInfos: [
-                { fieldName: "site", visible: true, label: "site: " },
-                { fieldName: "name", visible: true, label: "name: " },
-                { fieldName: "geomorph", visible: true, label: "geomorph: " },
-                { fieldName: "lat", visible: true, label: "lat: ", format: places: 6 },
-                { fieldName: "lon", visible: true, label: "lon: ", format: places: 6 },
-                { fieldName: "year", visible: true, label: "year: " },
-                { fieldName: "bird_ibi", visible: true, label: "bird_ibi: " },
-                { fieldName: "fish_ibi", visible: true, label: "fish_ibi: " },
-                { fieldName: "invert_ibi", visible: true, label: "invert_ibi: " },
-                { fieldName: "veg_ibi", visible: true, label: "veg_ibi: " },
-            ]
+            
+                
 
         qt = new esri.tasks.QueryTask layer_url + boundary_layer
         def = qt.execute q
@@ -402,6 +409,7 @@ require([
     map.markers = []
     ### address locator graphics markers ###
 
+    ### {% if level >= levels.agency %} ###
     ### links from popup ###########################################################
 
     link = domConstruct.create "a",
@@ -414,6 +422,7 @@ require([
 
     dojo_on link, "click", show_species
 
+    ### {% endif %} ###
     ### do_legend #####################################################################
 
     do_legend = (evt) ->

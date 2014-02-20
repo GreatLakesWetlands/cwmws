@@ -19,8 +19,13 @@ def gis(request):
     - `request`: request
     """
     
-    path = request.get_full_path().replace('/map/gis', '')
-    path = 'http://umd-cla-gis01.d.umn.edu' + path
+    lookup = {
+        'cwmlyr00': 'http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer',
+    }
+    
+    path = request.get_full_path().split('/', 4)[3:]
+    path[0] = lookup[path[0]]
+    path = '/'.join(path)
     print(path)
     #D print(request.body)
     data = urllib.request.urlopen(path).read()

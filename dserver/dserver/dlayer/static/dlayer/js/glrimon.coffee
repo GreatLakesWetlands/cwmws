@@ -1,5 +1,7 @@
 # /usr/bin/coffee -cw glrimon.coffee &
 
+# while /usr/bin/coffee -c glrimon.coffee && cp glrimon.js ../../../templates/dlayer/js/glrimon.js ; do inotifywait -e close_write -r . ; done
+
 ### setup ######################################################################
 
 map = {}
@@ -10,11 +12,10 @@ window.theme_name = 'geomorph'
 
 protocol = 'http:'
 
-layer_url = protocol+"//127.0.0.1:8000/map/gis/arcgis/rest/services/NRRI/glritest003/MapServer"
+layer_url = "{% url 'dlayer.views.gis' %}cwmlyr00"
 
 centroid_layer = "/0"
 boundary_layer = "/1"
-species_table = "/2"
 
 no_definition_query = '"site" > 0 and "site" < 10000'
 no_definition_query = '1 = 1'
@@ -217,7 +218,6 @@ require([
         map.infoWindow.setFeatures [def]
         # show the popup
         map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
-
     ### set_legend #################################################################
 
     set_legend = (which) ->
@@ -247,10 +247,11 @@ require([
 
     map.markers = []
     ### address locator graphics markers ###
-
     ### {% if level >= levels.agency %} ###
 
     ### show_species ###############################################################
+
+    species_table = "/2"
 
     show_species = (evt) ->
         feature = map.infoWindow.getSelectedFeature()

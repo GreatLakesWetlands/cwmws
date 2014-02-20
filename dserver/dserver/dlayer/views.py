@@ -1,6 +1,10 @@
 from django.shortcuts import HttpResponse, render_to_response, RequestContext
 
-import urllib
+import sys
+if sys.version_info.major > 2:
+    from urllib.request import urlopen
+else:
+    from urllib2 import urlopen
 
 access_levels = {
     'public': 0,
@@ -26,9 +30,9 @@ def gis(request):
     path = request.get_full_path().split('/', 4)[3:]
     path[0] = lookup[path[0]]
     path = '/'.join(path)
-    print(path)
+    #D print(path)
     #D print(request.body)
-    data = urllib.request.urlopen(path).read()
+    data = urlopen(path).read()
     #D print("%d bytes"%len(data))
     
     return HttpResponse(data)

@@ -205,8 +205,6 @@ require([
             fieldInfos: fieldInfos
             title: "{site}"
             
-                
-
         qt = new esri.tasks.QueryTask layer_url + boundary_layer
         def = qt.execute q
         def.addCallback (result) ->
@@ -522,7 +520,7 @@ require([
                 
         is_coord = true
         for c in address
-            if c not in '°"\',WwEeNnSs -.0123456789'
+            if c not in '°,WwEeNnSs -.0123456789'
                 is_coord = false
                 break
         
@@ -542,7 +540,13 @@ require([
                 else
                     status.innerHTML = "Site #{address} not found"     
         else if is_coord
-            alert 'coord'
+        
+            address = address.replace /[,°NnSsEeWw]/g, ' '
+            address = address.split /\s+/
+            address = address.map (ll) -> parseInt ll, 10
+            address = new Point address[1], address[0]
+            map.centerAt address
+            
         else
             locator.addressToLocations
                 address: SingleLine: address + ', U.S.A.'

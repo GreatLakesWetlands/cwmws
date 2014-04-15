@@ -486,7 +486,7 @@
       is_coord = true;
       for (_j = 0, _len1 = address.length; _j < _len1; _j++) {
         c = address[_j];
-        if (__indexOf.call('°"\',WwEeNnSs -.0123456789', c) < 0) {
+        if (__indexOf.call('°,WwEeNnSs -.0123456789', c) < 0) {
           is_coord = false;
           break;
         }
@@ -507,7 +507,13 @@
           }
         });
       } else if (is_coord) {
-        return alert('coord');
+        address = address.replace(/[,°NnSsEeWw]/g, ' ');
+        address = address.split(/\s+/);
+        address = address.map(function(ll) {
+          return parseInt(ll, 10);
+        });
+        address = new Point(address[1], address[0]);
+        return map.centerAt(address);
       } else {
         return locator.addressToLocations({
           address: {

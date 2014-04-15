@@ -544,8 +544,11 @@ require([
             address = address.replace /[,°NnSsEeWw]/g, ' '
             address = address.split /\s+/
             address = address.map (ll) -> parseInt ll, 10
-            if 'w' in address.toLower()
+            if 'w' in address.toLowerCase()
                 address[1] *= -1
+            if address[1] > 0
+                address[1] *= -1
+                
             address = new Point address[1], address[0]
             map.centerAt address
             

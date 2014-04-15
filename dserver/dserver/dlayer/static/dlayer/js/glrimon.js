@@ -470,7 +470,7 @@
 
     locator = new Locator(protocol + "//geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
     locate = function(address, status) {
-      var c, def, is_coord, is_site_num, locationGraphic, q, qt, symbol, _i, _j, _len, _len1;
+      var c, def, is_coord, is_site_num, locationGraphic, q, qt, sign, symbol, _i, _j, _len, _len1;
       status.innerHTML = 'Searching...';
       /* if only digits, treat as a site number
       */
@@ -507,14 +507,16 @@
           }
         });
       } else if (is_coord) {
+        sign = 1;
+        if (__indexOf.call(address.toLowerCase(), 'w') >= 0) {
+          sign = -1;
+        }
         address = address.replace(/[,°NnSsEeWw]/g, ' ');
         address = address.split(/\s+/);
         address = address.map(function(ll) {
           return parseInt(ll, 10);
         });
-        if (__indexOf.call(address[1].toLowerCase(), 'w') >= 0) {
-          address[1] *= -1;
-        }
+        address[1] *= sign;
         if (address[1] > 0) {
           address[1] *= -1;
         }

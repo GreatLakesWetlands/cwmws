@@ -541,11 +541,13 @@ require([
                     status.innerHTML = "Site #{address} not found"     
         else if is_coord
         
+            sign = 1
+            if 'w' in address.toLowerCase()
+                sign = -1
             address = address.replace /[,°NnSsEeWw]/g, ' '
             address = address.split /\s+/
             address = address.map (ll) -> parseInt ll, 10
-            if 'w' in address[1].toLowerCase()
-                address[1] *= -1
+            address[1] *= sign
             if address[1] > 0
                 address[1] *= -1
                 

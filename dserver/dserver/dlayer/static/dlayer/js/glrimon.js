@@ -823,9 +823,11 @@
     registry.byId("legend-pick").on("change", function() {
       return set_legend(registry.byId("legend-pick").get('value'));
     });
-    registry.byId("legend-redo").on("click", function() {
-      return set_legend(registry.byId("legend-pick").get('value'));
-    });
+    if (registry.byId("legend-redo")) {
+      registry.byId("legend-redo").on("click", function() {
+        return set_legend(registry.byId("legend-pick").get('value'));
+      });
+    }
     map.on("layers-add-result", do_legend);
     map.on('load', function(evt) {
       var m;

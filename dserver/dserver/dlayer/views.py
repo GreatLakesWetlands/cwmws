@@ -1,4 +1,5 @@
 from django.shortcuts import HttpResponse, render_to_response, RequestContext
+from django.contrib.auth.models import User, Group
 
 import sys
 if sys.version_info.major > 2:
@@ -9,19 +10,30 @@ else:
 access_levels = {
     'public': 0,
     'agency': 10,
-    'collaborator': 20,
+    'enduser': 20,
     'researcher': 30,
-    'corepi': 40,
+    'cwmpi': 40,
+    'corepi': 50,
+    'editor': 60,
     'dev': 100,
 }
 
-USER_LEVEL = 0
+def get_user_level(user):
+    """get_user_level - Return user level from access_levels
+
+    :Parameters:
+    - `user`: user to check
+    """
+    groups = user.groups.values_list('name', flat=True) or ['public']
+    return max((access_levels[g] for g in groups))
 def gis(request):
     """gis - proxy an ArcGIS request
 
     :Parameters:
     - `request`: request
     """
+    
+    level = get_user_level(request.user)
     
     lookup = {
         'cwmlyr00': 'http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer',
@@ -45,7 +57,7 @@ def map(request):
 
     return render_to_response("dlayer/glritest001.html",
         {
-            'level': USER_LEVEL,
+            'level': get_user_level(request.user),
             'levels': access_levels,
         },
         RequestContext(request))
@@ -58,7 +70,7 @@ def js(request):
     
     response = render_to_response("dlayer/js/glrimon.js",
         {
-            'level': USER_LEVEL,
+            'level': get_user_level(request.user),
             'levels': access_levels,
         },
         RequestContext(request))

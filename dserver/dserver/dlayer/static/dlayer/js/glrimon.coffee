@@ -544,8 +544,22 @@ require([
             address = address.replace /[,°NnSsEeWw]/g, ' '
             address = address.split /\s+/
             address = address.map (ll) -> parseInt ll, 10
+            if 'w' in address.toLower()
+                address[1] *= -1
             address = new Point address[1], address[0]
             map.centerAt address
+            
+            symbol = new SimpleMarkerSymbol(
+                SimpleMarkerSymbol.STYLE_CIRCLE, 
+                12, 
+                new SimpleLineSymbol(
+                    SimpleLineSymbol.STYLE_SOLID, 
+                    new Color [80, 255, 80, 0.5], 
+                    0
+                ), new Color [80, 255, 80, 1])      
+        
+                locationGraphic = new Graphic address, symbol
+                map.graphics.add locationGraphic
             
         else
             locator.addressToLocations

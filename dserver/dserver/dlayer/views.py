@@ -46,7 +46,10 @@ def gis(request):
     path = '/'.join(path)
     #D print(path)
     #D print(request.body)
-    data = urlopen(path).read()
+    if request.body:
+        data = urlopen(path, request.body).read()
+    else:
+        data = urlopen(path).read()
     #D print("%d bytes"%len(data))
     
     return HttpResponse(data)

@@ -558,8 +558,8 @@ require([
                     0
                 ), new Color [80, 255, 80, 1])      
         
-                locationGraphic = new Graphic address, symbol
-                map.graphics.add locationGraphic
+            locationGraphic = new Graphic address, symbol
+            map.graphics.add locationGraphic
             
         else
             locator.addressToLocations

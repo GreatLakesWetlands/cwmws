@@ -470,7 +470,7 @@
 
     locator = new Locator(protocol + "//geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
     locate = function(address, status) {
-      var c, def, is_coord, is_site_num, q, qt, _i, _j, _len, _len1;
+      var c, def, is_coord, is_site_num, locationGraphic, q, qt, symbol, _i, _j, _len, _len1;
       status.innerHTML = 'Searching...';
       /* if only digits, treat as a site number
       */
@@ -512,8 +512,14 @@
         address = address.map(function(ll) {
           return parseInt(ll, 10);
         });
+        if (__indexOf.call(address.toLower(), 'w') >= 0) {
+          address[1] *= -1;
+        }
         address = new Point(address[1], address[0]);
-        return map.centerAt(address);
+        map.centerAt(address);
+        symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 12, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([80, 255, 80, 0.5], 0)), new Color([80, 255, 80, 1]));
+        locationGraphic = new Graphic(address, symbol);
+        return map.graphics.add(locationGraphic);
       } else {
         return locator.addressToLocations({
           address: {

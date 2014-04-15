@@ -60,7 +60,7 @@
                     </div>
                     {% endif %}
                     
-                    <div>Color sites by:
+                    <div>Color by:
                     <select id='legend-pick' data-dojo-type="dijit/form/Select">
                         <option value='geomorph'>Geomorph</option>
                         <option value='samp_year'>Sampling year</option>
@@ -78,6 +78,9 @@
                     </div>                        
                     
                     {% if level >= levels.agency %}
+                    
+                    <hr/>
+                    
                     <div>
                     <div><button id="show-only"  data-dojo-type="dijit/form/Button">Select</button> only sites with data for </div>
                     <div><input id='spp_any' value='spp_any' name='spp_sel' checked='1'

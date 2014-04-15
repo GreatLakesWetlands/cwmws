@@ -912,8 +912,9 @@ require([
 
     registry.byId("legend-pick").on "change", ->
         set_legend registry.byId("legend-pick").get('value')
-    registry.byId("legend-redo").on "click", ->
-        set_legend registry.byId("legend-pick").get('value')
+    if registry.byId("legend-redo")
+        registry.byId("legend-redo").on "click", ->
+            set_legend registry.byId("legend-pick").get('value')
 
     map.on "layers-add-result", do_legend
 

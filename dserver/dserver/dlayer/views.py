@@ -1,5 +1,6 @@
 from django.shortcuts import HttpResponse, render_to_response, RequestContext
 from django.contrib.auth.models import User, Group
+from django.views.decorators.csrf import csrf_exempt
 
 import sys
 if sys.version_info.major > 2:
@@ -26,6 +27,7 @@ def get_user_level(user):
     """
     groups = user.groups.values_list('name', flat=True) or ['public']
     return max((access_levels[g] for g in groups))
+@csrf_exempt
 def gis(request):
     """gis - proxy an ArcGIS request
 

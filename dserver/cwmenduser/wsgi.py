@@ -18,6 +18,9 @@ sys.path = [i.replace("empty/empty", "esriapp/dserver/venv")
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 settings_module = "%s.settings" % PROJECT_ROOT.split(os.sep)[-1]
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings_module)
+os.environ["LC_ALL"] = 'en_US.UTF-8'
+os.environ["LC_LANG"] = 'en_US.UTF-8'
+os.environ["LANG"] = 'en_US.UTF-8'
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()

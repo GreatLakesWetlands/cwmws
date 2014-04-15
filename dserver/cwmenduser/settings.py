@@ -373,5 +373,6 @@ else:
 AUTH_PROFILE_MODULE = "dlayer.UserProfile"
 # START: EMAIL
 LC_ALL= 'en_US.UTF-8'
+LC_LANG = 'en_US.UTF-8'
 LANG = 'en_US.UTF-8'
 # END: EMAIL

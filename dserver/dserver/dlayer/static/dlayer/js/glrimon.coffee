@@ -546,7 +546,7 @@ require([
                 sign = -1
             address = address.replace /[,°NnSsEeWw]/g, ' '
             address = address.split /\s+/
-            address = address.map (ll) -> parseInt ll, 10
+            address = address.map (ll) -> parseFloat ll
             address[1] *= sign
             if address[1] > 0
                 address[1] *= -1

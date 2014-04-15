@@ -514,7 +514,7 @@
         address = address.replace(/[,°NnSsEeWw]/g, ' ');
         address = address.split(/\s+/);
         address = address.map(function(ll) {
-          return parseInt(ll, 10);
+          return parseFloat(ll);
         });
         address[1] *= sign;
         if (address[1] > 0) {

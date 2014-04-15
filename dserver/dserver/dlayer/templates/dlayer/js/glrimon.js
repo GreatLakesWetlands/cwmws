@@ -537,7 +537,8 @@
     dojo_query(".search-box").forEach(function(node) {
       var bt, status, tb;
       domConstruct.create("div", {
-        innerHTML: "Find site # / address:"
+        innerHTML: "Find site # / address / lat,lon:",
+        title: "Lat./Lon. in decimal degrees, like 46.780164,-92.08765"
       }, node);
       tb = new TextBox({
         style: 'width: 12em',

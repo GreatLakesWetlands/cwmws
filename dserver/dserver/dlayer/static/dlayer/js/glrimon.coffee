@@ -573,7 +573,9 @@ require([
         
     dojo_query(".search-box").forEach (node) ->
         
-        domConstruct.create "div", innerHTML: "Find site # / address:", node
+        domConstruct.create "div",
+            {innerHTML: "Find site # / address / lat,lon:",
+            title: "Lat./Lon. in decimal degrees, like 46.780164,-92.08765"}, node
         tb = new TextBox style: 'width: 12em', value: '123', ''
         domConstruct.place tb.domNode, node
         bt = new Button innerHTML: "Find", ''

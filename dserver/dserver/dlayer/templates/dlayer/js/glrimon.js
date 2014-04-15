@@ -512,7 +512,7 @@
         address = address.map(function(ll) {
           return parseInt(ll, 10);
         });
-        if (__indexOf.call(address.toLowerCase(), 'w') >= 0) {
+        if (__indexOf.call(address[1].toLowerCase(), 'w') >= 0) {
           address[1] *= -1;
         }
         if (address[1] > 0) {

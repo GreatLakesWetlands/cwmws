@@ -2,7 +2,7 @@
 .draft-disclaimer {
   position: fixed;
   bottom: 20px;
-  left: 20px;
+  right: 20px;
   z-index: 10000;
   font-size: 14pt;
   color: red;

@@ -514,17 +514,19 @@ require([
         status.innerHTML = 'Searching...'
 
         ### if only digits, treat as a site number ###
-        non_digit = false
+        is_site_num = true
         for c in address
             if c not in '0123456789'
-                non_digit = true
+                is_site_num = false
+                break
+                
+        is_coord = true
+        for c in address
+            if c not in '°"\',WwEeNnSs -.0123456789'
+                is_coord = false
                 break
         
-        if non_digit    
-            locator.addressToLocations
-                address: SingleLine: address + ', U.S.A.'
-                outFields: ["*"]
-        else
+        if is_site_num    
         
             q = new esri.tasks.Query()
             q.returnGeometry = true
@@ -539,6 +541,12 @@ require([
                     map.setExtent result.features[0].geometry.getExtent().expand 1.5
                 else
                     status.innerHTML = "Site #{address} not found"     
+        else if is_coord
+            alert 'coord'
+        else
+            locator.addressToLocations
+                address: SingleLine: address + ', U.S.A.'
+                outFields: ["*"]
         
     dojo_query(".search-box").forEach (node) ->
         

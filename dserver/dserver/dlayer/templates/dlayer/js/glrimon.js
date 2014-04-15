@@ -470,27 +470,28 @@
 
     locator = new Locator(protocol + "//geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer");
     locate = function(address, status) {
-      var c, def, non_digit, q, qt, _i, _len;
+      var c, def, is_coord, is_site_num, q, qt, _i, _j, _len, _len1;
       status.innerHTML = 'Searching...';
       /* if only digits, treat as a site number
       */
 
-      non_digit = false;
+      is_site_num = true;
       for (_i = 0, _len = address.length; _i < _len; _i++) {
         c = address[_i];
         if (__indexOf.call('0123456789', c) < 0) {
-          non_digit = true;
+          is_site_num = false;
           break;
         }
       }
-      if (non_digit) {
-        return locator.addressToLocations({
-          address: {
-            SingleLine: address + ', U.S.A.'
-          },
-          outFields: ["*"]
-        });
-      } else {
+      is_coord = true;
+      for (_j = 0, _len1 = address.length; _j < _len1; _j++) {
+        c = address[_j];
+        if (__indexOf.call('°"\',WwEeNnSs -.0123456789', c) < 0) {
+          is_coord = false;
+          break;
+        }
+      }
+      if (is_site_num) {
         q = new esri.tasks.Query();
         q.returnGeometry = true;
         q.outFields = ["site", "name", "geomorph", 'lat', 'lon'];
@@ -504,6 +505,15 @@
           } else {
             return status.innerHTML = "Site " + address + " not found";
           }
+        });
+      } else if (is_coord) {
+        return alert('coord');
+      } else {
+        return locator.addressToLocations({
+          address: {
+            SingleLine: address + ', U.S.A.'
+          },
+          outFields: ["*"]
         });
       }
     };

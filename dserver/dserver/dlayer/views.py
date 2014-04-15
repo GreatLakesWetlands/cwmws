@@ -1,6 +1,31 @@
 from django.shortcuts import HttpResponse, render_to_response, RequestContext
+from django.contrib.auth.models import User, Group
 
-import urllib
+import sys
+if sys.version_info.major > 2:
+    from urllib.request import urlopen
+else:
+    from urllib2 import urlopen
+
+access_levels = {
+    'public': 0,
+    'agency': 10,
+    'enduser': 20,
+    'researcher': 30,
+    'cwmpi': 40,
+    'corepi': 50,
+    'editor': 60,
+    'dev': 100,
+}
+
+def get_user_level(user):
+    """get_user_level - Return user level from access_levels
+
+    :Parameters:
+    - `user`: user to check
+    """
+    groups = user.groups.values_list('name', flat=True) or ['public']
+    return max((access_levels[g] for g in groups))
 def gis(request):
     """gis - proxy an ArcGIS request
 
@@ -8,11 +33,18 @@ def gis(request):
     - `request`: request
     """
     
-    path = request.get_full_path().replace('/map/gis', '')
-    path = 'http://umd-cla-gis01.d.umn.edu' + path
-    print(path)
+    level = get_user_level(request.user)
+    
+    lookup = {
+        'cwmlyr00': 'http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer',
+    }
+    
+    path = request.get_full_path().split('/', 4)[3:]
+    path[0] = lookup[path[0]]
+    path = '/'.join(path)
+    #D print(path)
     #D print(request.body)
-    data = urllib.request.urlopen(path).read()
+    data = urlopen(path).read()
     #D print("%d bytes"%len(data))
     
     return HttpResponse(data)
@@ -22,17 +54,11 @@ def map(request):
     :Parameters:
     - `request`: request
     """
-    
+
     return render_to_response("dlayer/glritest001.html",
         {
-            'level': 0,
-            'levels': {
-                'public': 0,
-                'agency': 10,
-                'researcher': 20,
-                'corepi': 30,
-                'dev': 100,
-            }
+            'level': get_user_level(request.user),
+            'levels': access_levels,
         },
         RequestContext(request))
 def js(request):
@@ -42,16 +68,12 @@ def js(request):
     - `request`: request
     """
     
-    return render_to_response("dlayer/js/glrimon.js",
+    response = render_to_response("dlayer/js/glrimon.js",
         {
-            'level': 0,
-            'levels': {
-                'public': 0,
-                'agency': 10,
-                'researcher': 20,
-                'corepi': 30,
-                'dev': 100,
-            }
+            'level': get_user_level(request.user),
+            'levels': access_levels,
         },
         RequestContext(request))
+    response["Content-type"] = "text/plain"
+    return response
 # Create your views here.

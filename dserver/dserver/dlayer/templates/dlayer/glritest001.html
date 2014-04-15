@@ -35,6 +35,10 @@
         <div id="sidePane"
         data-dojo-type="dijit/layout/ContentPane"
         data-dojo-props="region:'left'">
+        
+            <div class="site_links">
+            <a href="/">Home</a>
+            </div>
 
             <div data-dojo-type="dijit/TitlePane" id='sites-pane'
                 data-dojo-props="region:'right', title:'Sites', closable:false, open:true">
@@ -67,8 +71,10 @@
                         <option value='veg_ibi'>Veg. IBI</option>
                         {% endif %}
                     </select>
+                    {% if level >= levels.agency %}
                     <button id="legend-redo"  data-dojo-type="dijit/form/Button">re-do
                     </button>
+                    {% endif %}
                     </div>                        
                     
                     {% if level >= levels.agency %}

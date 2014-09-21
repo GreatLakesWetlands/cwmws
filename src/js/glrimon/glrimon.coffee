@@ -26,6 +26,7 @@ no_definition_query = '1 = 1'
 
 # for GLEI-2 only
 # no_definition_query = "site in (1027, 1041, 1077, 1458, 1465, 1469, 1497, 1514, 1698, 1703, 1859, 1862, 1863, 1866, 1888, 1928, 5512, 5541, 5574, 5634, 5729, 5933, 5950)"
+
 ### main #######################################################################
 
 require([
@@ -144,7 +145,6 @@ require([
     SnappingManager,
     GeometryService
 ) ->
-    
     ### setup misc #################################################################
 
     parser.parse()  
@@ -162,7 +162,6 @@ require([
         new SimpleLineSymbol SimpleLineSymbol.STYLE_SOLID,
             new Color([0,0,255]), 1
         new Color([0,0,0])
-
     ### querySites #################################################################
 
     querySites = (e) ->
@@ -212,7 +211,6 @@ require([
         map.infoWindow.setFeatures [def]
         # show the popup
         map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
-
     ### show_species ###############################################################
 
     show_species = (evt) ->
@@ -251,7 +249,6 @@ require([
                 title: "Species for site #{site}"
                 content: div
             ans.show()
-
     ### select #####################################################################
 
     select = (shape) ->
@@ -315,7 +312,6 @@ require([
         centroids.setDefinitionExpression no_definition_query
         sites.setDefinitionExpression no_definition_query
         set_legend "geomorph"  # because other renderers hide sites
-
     ### selected_only ##############################################################
 
     selected_only = (evt, force = false) ->
@@ -387,7 +383,6 @@ require([
             #sites.setDefinitionExpression no_definition_query
 
             selected_only(evt=null, force=true)
-            
     ### create map #################################################################
 
     map = new Map "map",
@@ -401,7 +396,6 @@ require([
 
     map.markers = []
     ### address locator graphics markers ###
-
     ### links from popup ###########################################################
 
     link = domConstruct.create "a",
@@ -413,7 +407,6 @@ require([
         dojo_query(".actionList", map.infoWindow.domNode)[0]
 
     dojo_on link, "click", show_species
-
     ### do_legend #####################################################################
 
     do_legend = (evt) ->
@@ -463,7 +456,6 @@ require([
                 sites.setVisibleLayers sites.visibleLayers
 
     # map.on "layers-add-result", layer_list_setup_map_layer
-
     ### set up layer picker - feature layer version ################################
 
     layer_list_setup_feature_layer = (evt) ->
@@ -486,7 +478,6 @@ require([
                 layer.setVisibility(visible)
 
     map.on "layers-add-result", layer_list_setup_feature_layer
-
     ### BasemapGallery #############################################################
 
     basemapGallery = new BasemapGallery
@@ -495,7 +486,6 @@ require([
         "basemapGallery"
         
     basemapGallery.startup()
-
     ### find address / site ########################################################
 
     locator = new Locator protocol+"//geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
@@ -533,7 +523,9 @@ require([
         
     dojo_query(".search-box").forEach (node) ->
         
-        domConstruct.create "div", innerHTML: "Find site # / address:", node
+        domConstruct.create "div",
+            {innerHTML: "Find site # / address / lat,lon:",
+            title: "Lat./Lon. in decimal degrees, like 46.780164,-92.08765"}, node    
         tb = new TextBox style: 'width: 12em', value: '123', ''
         domConstruct.place tb.domNode, node
         bt = new Button innerHTML: "Find", ''
@@ -597,13 +589,11 @@ require([
         map.setExtent webMercatorUtils.geographicToWebMercator esriExtent 
 
         # showResults(evt.addresses);
-
     ### SimpleRenderer #############################################################
 
     simple_renderer = new SimpleRenderer star
 
     line_renderer = SimpleRenderer perimeter
-
     ### UniqueValueRenderer ########################################################
 
     unique_renderer = new UniqueValueRenderer null, 'geomorph'
@@ -651,7 +641,6 @@ require([
                     new Color(thing.color)
             label: thing.value
             description: thing.value
-
     ### ClassBreaksRenderer ########################################################
 
     breaks_renderer = new ClassBreaksRenderer star, 'lon'
@@ -858,7 +847,6 @@ require([
             #X console.log dojo_query('#legendDiv')
             #X do_legend
             #X     layers: [centroids, sites]
-            
     ### load layers ################################################################
 
     renderer = breaks_renderer
@@ -920,8 +908,4 @@ require([
     ### sometimes 1-2 zooms / pans are needed to get features / legend
     to show, so try this to avoid that ###
     map.addLayers []
-
-
 )
-
-

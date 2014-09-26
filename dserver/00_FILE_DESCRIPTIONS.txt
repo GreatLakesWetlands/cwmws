@@ -5,8 +5,8 @@ build.sh
   virtualenv / pip / Django / Mezzanine build script
 
 cwmenduser
-  A Mezzanine Django project to run dserver/dlayer (symlinked from cwmenduser)
-  and provide context pages.
+  A Mezzanine Django project to run dserver/dlayer 
+  (which is symlinked from cwmenduser) and provide context pages.
 
 dserver/dlayer
   Django app. to run ESRI map, see `dserver`

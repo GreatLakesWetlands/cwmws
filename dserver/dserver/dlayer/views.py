@@ -1,6 +1,7 @@
 from django.shortcuts import HttpResponse, render_to_response, RequestContext
 from django.contrib.auth.models import User, Group
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 import sys
 if sys.version_info.major > 2:
@@ -38,7 +39,7 @@ def gis(request):
     level = get_user_level(request.user)
     
     lookup = {
-        'cwmlyr00': 'http://umd-cla-gis01.d.umn.edu/arcgis/rest/services/NRRI/glritest003/MapServer',
+        'cwmlyr00': settings.CWM_LAYER_0,
     }
     
     path = request.get_full_path().split('/', 4)[3:]

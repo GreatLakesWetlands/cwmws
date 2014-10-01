@@ -4,11 +4,8 @@ import os
 
 # TNB
 import sys
-sys.path[:0] = [
-    "/mnt/usr1/beav/site/esriapp/dserver/venv/lib/python2.7/site-packages",
-    "/mnt/usr1/beav/site/esriapp/dserver/cwmenduser",
-    "/mnt/usr1/beav/site/esriapp/dserver/",
-]
+from local_settings import WSGI_PATH
+sys.path[:0] = WSGI_PATH
 
 sys.path = [i.replace("empty/empty", "esriapp/dserver/venv")
             for i in sys.path]

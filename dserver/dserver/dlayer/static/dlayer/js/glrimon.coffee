@@ -1,15 +1,30 @@
-# /usr/bin/coffee -cw glrimon.coffee &
+#: useful to automatically convert ``glrimon.coffee`` to ``glrimon.js``
+#: everytime ``glrimon.coffee`` is changed::
+#: 
+#:     /usr/bin/coffee -cw glrimon.coffee &
 
 # while /usr/bin/coffee -c glrimon.coffee && cp glrimon.js ../../../templates/dlayer/js/glrimon.js ; do inotifywait -e close_write -r . ; done
 
 ### setup ######################################################################
 
+#: Global variables
+#: ----------------
+
+#: .. js:data:: map
+#: 
+#:     A global map object
 map = {}
 
+#: .. js:data:: window.selected_sites, window.highlighted_sites, window.theme_name
+#: 
+#: some page level data bound to the window object
 window.selected_sites = []
 window.highlighted_sites = []
 window.theme_name = 'geomorph'
 
+#: .. js:data:: protocol
+#: 
+#:     For conveniently switching between `"http"` and `"https"`
 protocol = 'http:'
 
 layer_url = "{% url 'dlayer.views.gis' %}cwmlyr00"
@@ -27,6 +42,14 @@ no_definition_query = '1 = 1'
 # no_definition_query = "site in (1027, 1041, 1077, 1458, 1465, 1469, 1497, 1514, 1698, 1703, 1859, 1862, 1863, 1866, 1888, 1928, 5512, 5541, 5574, 5634, 5729, 5933, 5950)"
 ### main #######################################################################
 
+
+#: Methods
+#: -------
+
+#: .. js:function:: main
+#: 
+#:    Not really a function called main, just the main Dojo ``require()`` call
+#:    which wraps everything else.
 require([
     'esri/map',
     'esri/layers/ArcGISDynamicMapServiceLayer',
@@ -143,7 +166,7 @@ require([
     SnappingManager,
     GeometryService
 ) ->
-    
+
     ### setup misc #################################################################
 
     parser.parse()  
@@ -164,6 +187,11 @@ require([
 
     ### querySites #################################################################
 
+    #: .. js:function:: querySites(event)
+    #: 
+    #:     query server for sites near mouseclick
+    #:     
+    #:     :param event: the triggering mouse click event
     querySites = (e) ->
         ### query server for sites near mouseclick ###
         

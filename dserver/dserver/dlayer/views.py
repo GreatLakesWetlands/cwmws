@@ -1,3 +1,5 @@
+"""Methods linked to urls"""
+
 from django.shortcuts import HttpResponse, render_to_response, RequestContext
 from django.contrib.auth.models import User, Group
 from django.views.decorators.csrf import csrf_exempt
@@ -9,6 +11,7 @@ if sys.version_info.major > 2:
 else:
     from urllib2 import urlopen
 
+#: ranking of access levels
 access_levels = {
     'public': 0,
     'agency': 10,

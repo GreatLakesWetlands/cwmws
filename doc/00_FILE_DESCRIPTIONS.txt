@@ -1,0 +1,7 @@
+make.sh
+  set up the exports required for make to work, only needs
+  running once
+
+(no description needed)
+  00_FILE_DESCRIPTIONS.txt
+

@@ -26,8 +26,7 @@ access_levels = {
 def get_user_level(user):
     """get_user_level - Return user level from access_levels
 
-    :Parameters:
-    - `user`: user to check
+    :param  user: :class:`django.contrib.auth.models.User` to check
     """
     groups = user.groups.values_list('name', flat=True) or ['public']
     return max((access_levels[g] for g in groups))
@@ -35,8 +34,7 @@ def get_user_level(user):
 def gis(request):
     """gis - proxy an ArcGIS request
 
-    :Parameters:
-    - `request`: request
+    :param request: request
     """
     
     level = get_user_level(request.user)
@@ -60,8 +58,7 @@ def gis(request):
 def map(request):
     """map - show the map
 
-    :Parameters:
-    - `request`: request
+    :param request: request
     """
 
     return render_to_response("dlayer/glritest001.html",

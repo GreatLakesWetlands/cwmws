@@ -246,6 +246,11 @@ require([
         map.infoWindow.show e.screenPoint, map.getInfoWindowAnchor e.screenPoint
     ### set_legend #################################################################
 
+    #: .. js:function:: set_legend(which)
+    #: 
+    #:    :param string which: which legend, key for :js:data:`renderers`
+    #:
+    #:    Forces update of map to show new legend
     set_legend = (which) ->
 
         renderer = renderers[which]
@@ -951,6 +956,10 @@ require([
     layers_list = [sites, centroids]
     map.addLayers layers_list
 
+    #: .. js:data:: renderers
+    #: 
+    #:     A mapping to site point renderers by name, "global" data within
+    #:     the ``require()`` call.
     renderers = 
         geomorph: unique_renderer
         samp_year: year_renderer

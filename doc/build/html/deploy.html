@@ -102,8 +102,8 @@ ssh -p 2222 127.0.0.1
 <p>Log in and add <tt class="docutils literal"><span class="pre">GRUB_RECORDFAIL_TIMEOUT=10</span></tt> to <tt class="docutils literal"><span class="pre">/etc/default/grub</span></tt> to stop the
 server waiting for input on reboot after an improper shutdown.  Then run these commands:</p>
 <div class="highlight-python"><div class="highlight"><pre>sudo update-grub  # applies the timeout fix
-apt-get update
-apt-get upgrade
+sudo apt-get update
+sudo apt-get upgrade
 </pre></div>
 </div>
 <div class="topic">
@@ -171,10 +171,10 @@ modify it appropriately, replacing the parts in &lt;angle brackets&gt;.</p>
 <p>At this point the website should be visible at <a class="reference external" href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>
 if using a regular non-virtual machine, and at <a class="reference external" href="http://127.0.0.1:5800">http://127.0.0.1:5800</a> on the <em>host</em>
 OS if using a virtual machine.</p>
-<p>The original deployment of the site used <a class="reference external" href="http://httpd.apache.org/">Apache</a>
-and WSGI, see <a class="reference external" href="http://django.readthedocs.org/en/1.6.x/howto/deployment/wsgi/modwsgi.html#daemon-mode" title="(in Django v1.6)"><em>Using mod_wsgi daemon mode</em></a>.</p>
 <div class="section" id="apache-for-deploying-the-public-website">
 <h2>Apache for deploying the public website<a class="headerlink" href="#apache-for-deploying-the-public-website" title="Permalink to this headline">¶</a></h2>
+<p>The original deployment of the site used <a class="reference external" href="http://httpd.apache.org/">Apache</a>
+and WSGI, see <a class="reference external" href="http://django.readthedocs.org/en/1.6.x/howto/deployment/wsgi/modwsgi.html#daemon-mode" title="(in Django v1.6)"><em>Using mod_wsgi daemon mode</em></a>.</p>
 <p>This assumes a regular non-virtual machine connected to the internet,</p>
 <p>Here&#8217;s the Apache site definition needed to deploy the site:</p>
 <div class="highlight-python"><div class="highlight"><pre>&lt;VirtualHost *:80&gt;
@@ -268,7 +268,7 @@ the directory when the <tt class="docutils literal"><span class="pre">git</span>
     </div>
     <div class="footer">
         &copy; Copyright 2014, CWM GLRI.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

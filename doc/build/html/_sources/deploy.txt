@@ -54,8 +54,8 @@ Log in and add ``GRUB_RECORDFAIL_TIMEOUT=10`` to ``/etc/default/grub`` to stop t
 server waiting for input on reboot after an improper shutdown.  Then run these commands::
     
     sudo update-grub  # applies the timeout fix
-    apt-get update
-    apt-get upgrade
+    sudo apt-get update
+    sudo apt-get upgrade
 
 .. topic:: Virtual machine
     
@@ -126,11 +126,11 @@ At this point the website should be visible at http://127.0.0.1:8000
 if using a regular non-virtual machine, and at http://127.0.0.1:5800 on the *host*
 OS if using a virtual machine.
 
-The original deployment of the site used `Apache <http://httpd.apache.org/>`_
-and WSGI, see :ref:`django:daemon-mode`.
-
 Apache for deploying the public website
 +++++++++++++++++++++++++++++++++++++++
+
+The original deployment of the site used `Apache <http://httpd.apache.org/>`_
+and WSGI, see :ref:`django:daemon-mode`.
 
 This assumes a regular non-virtual machine connected to the internet, 
 

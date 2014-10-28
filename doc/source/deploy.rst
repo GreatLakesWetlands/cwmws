@@ -54,8 +54,8 @@ Log in and add ``GRUB_RECORDFAIL_TIMEOUT=10`` to ``/etc/default/grub`` to stop t
 server waiting for input on reboot after an improper shutdown.  Then run these commands::
     
     sudo update-grub  # applies the timeout fix
-    apt-get update
-    apt-get upgrade
+    sudo apt-get update
+    sudo apt-get upgrade
 
 .. topic:: Virtual machine
     

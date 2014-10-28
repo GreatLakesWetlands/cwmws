@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Python modules &mdash; GreatLakesWetlands 0.5 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="GreatLakesWetlands 0.5 documentation" href="index.html" />
+    <link rel="next" title="CoffeeScript code" href="coffeemodules.html" />
+    <link rel="prev" title="Documentation system" href="documentation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coffeemodules.html" title="CoffeeScript code"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="documentation.html" title="Documentation system"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">GreatLakesWetlands 0.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="python-modules">
+<h1>Python modules<a class="headerlink" href="#python-modules" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-cwmenduser.urls">
+<span id="cwmenduser-urls"></span><h2>cwmenduser.urls<a class="headerlink" href="#module-cwmenduser.urls" title="Permalink to this headline">¶</a></h2>
+<dl class="data">
+<dt id="cwmenduser.urls.urlpatterns">
+<tt class="descclassname">cwmenduser.urls.</tt><tt class="descname">urlpatterns</tt><a class="headerlink" href="#cwmenduser.urls.urlpatterns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>A list of regular expression based mappings from urls
+to methods in views.py, see <a class="reference external" href="http://django.readthedocs.org/en/1.6.x/ref/urls.html#django.conf.urls.url" title="(in Django v1.6)"><tt class="docutils literal"><span class="pre">django.conf.urls.url()</span></tt></a></p>
+</div>
+<div class="section" id="module-dlayer.views">
+<span id="dlayer-views"></span><h2>dlayer.views<a class="headerlink" href="#module-dlayer.views" title="Permalink to this headline">¶</a></h2>
+<p>Methods linked to urls</p>
+<dl class="data">
+<dt id="dlayer.views.access_levels">
+<tt class="descclassname">dlayer.views.</tt><tt class="descname">access_levels</tt><em class="property"> = {'enduser': 20, 'corepi': 50, 'cwmpi': 40, 'editor': 60, 'researcher': 30, 'agency': 10, 'public': 0, 'dev': 100}</em><a class="headerlink" href="#dlayer.views.access_levels" title="Permalink to this definition">¶</a></dt>
+<dd><p>ranking of access levels</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dlayer.views.get_user_level">
+<tt class="descclassname">dlayer.views.</tt><tt class="descname">get_user_level</tt><big>(</big><em>user</em><big>)</big><a class="reference internal" href="_modules/dlayer/views.html#get_user_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dlayer.views.get_user_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>get_user_level - Return user level from access_levels</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> &#8211; <a class="reference external" href="http://django.readthedocs.org/en/1.6.x/ref/contrib/auth.html#django.contrib.auth.models.User" title="(in Django v1.6)"><tt class="xref py py-class docutils literal"><span class="pre">django.contrib.auth.models.User</span></tt></a> to check</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dlayer.views.gis">
+<tt class="descclassname">dlayer.views.</tt><tt class="descname">gis</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/dlayer/views.html#gis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dlayer.views.gis" title="Permalink to this definition">¶</a></dt>
+<dd><p>gis - proxy an ArcGIS request</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request</strong> &#8211; request</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dlayer.views.js">
+<tt class="descclassname">dlayer.views.</tt><tt class="descname">js</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="_modules/dlayer/views.html#js"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dlayer.views.js" title="Permalink to this definition">¶</a></dt>
+<dd><p>js - render js through a template</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><cite>request</cite>: request</li>
+</ul>
+</dd></dl>
+
+<dl class="function">
+<dt id="dlayer.views.map">
+<tt class="descclassname">dlayer.views.</tt><tt class="descname">map</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="_modules/dlayer/views.html#map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dlayer.views.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>map - show the map</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request</strong> &#8211; request</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Python modules</a><ul>
+<li><a class="reference internal" href="#module-cwmenduser.urls">cwmenduser.urls</a></li>
+<li><a class="reference internal" href="#module-dlayer.views">dlayer.views</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="documentation.html"
+                        title="previous chapter">Documentation system</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="coffeemodules.html"
+                        title="next chapter">CoffeeScript code</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/automodules.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coffeemodules.html" title="CoffeeScript code"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="documentation.html" title="Documentation system"
+             >previous</a> |</li>
+        <li><a href="index.html">GreatLakesWetlands 0.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, CWM GLRI.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

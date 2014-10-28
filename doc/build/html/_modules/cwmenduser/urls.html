@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cwmenduser.urls &mdash; GreatLakesWetlands 0.5 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="GreatLakesWetlands 0.5 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">GreatLakesWetlands 0.5 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cwmenduser.urls</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+
+<span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">patterns</span><span class="p">,</span> <span class="n">include</span><span class="p">,</span> <span class="n">url</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls.i18n</span> <span class="kn">import</span> <span class="n">i18n_patterns</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+
+<span class="kn">from</span> <span class="nn">mezzanine.core.views</span> <span class="kn">import</span> <span class="n">direct_to_template</span>
+
+
+<span class="n">admin</span><span class="o">.</span><span class="n">autodiscover</span><span class="p">()</span>
+
+<span class="c"># Add the urlpatterns for any custom Django applications here.</span>
+<span class="c"># You can also change the ``home`` view to add your own functionality</span>
+<span class="c"># to the project&#39;s homepage.</span>
+
+<span class="c">#: translate urls to methods in views.py</span>
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">i18n_patterns</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">,</span>
+    <span class="c"># Change the admin prefix here to use an alternate URL for the</span>
+    <span class="c"># admin interface, which would be marginally more secure.</span>
+    <span class="p">(</span><span class="s">&quot;^admin/&quot;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+    <span class="c"># (&quot;^admin&quot;, include(admin.site.urls)),  # FIXME TNB bad quick fix</span>
+<span class="p">)</span>
+
+<span class="n">urlpatterns</span> <span class="o">+=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+
+    <span class="n">url</span><span class="p">(</span><span class="s">&quot;^map/&quot;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s">&quot;dlayer.urls&quot;</span><span class="p">)),</span>
+
+    <span class="c"># We don&#39;t want to presume how your homepage works, so here are a</span>
+    <span class="c"># few patterns you can use to set it up.</span>
+
+    <span class="c"># HOMEPAGE AS STATIC TEMPLATE</span>
+    <span class="c"># ---------------------------</span>
+    <span class="c"># This pattern simply loads the index.html template. It isn&#39;t</span>
+    <span class="c"># commented out like the others, so it&#39;s the default. You only need</span>
+    <span class="c"># one homepage pattern, so if you use a different one, comment this</span>
+    <span class="c"># one out.</span>
+
+    <span class="c"># url(&quot;^$&quot;, direct_to_template, {&quot;template&quot;: &quot;index.html&quot;}, name=&quot;home&quot;),</span>
+
+    <span class="c"># HOMEPAGE AS AN EDITABLE PAGE IN THE PAGE TREE</span>
+    <span class="c"># ---------------------------------------------</span>
+    <span class="c"># This pattern gives us a normal ``Page`` object, so that your</span>
+    <span class="c"># homepage can be managed via the page tree in the admin. If you</span>
+    <span class="c"># use this pattern, you&#39;ll need to create a page in the page tree,</span>
+    <span class="c"># and specify its URL (in the Meta Data section) as &quot;/&quot;, which</span>
+    <span class="c"># is the value used below in the ``{&quot;slug&quot;: &quot;/&quot;}`` part.</span>
+    <span class="c"># Also note that the normal rule of adding a custom</span>
+    <span class="c"># template per page with the template name using the page&#39;s slug</span>
+    <span class="c"># doesn&#39;t apply here, since we can&#39;t have a template called</span>
+    <span class="c"># &quot;/.html&quot; - so for this case, the template &quot;pages/index.html&quot;</span>
+    <span class="c"># should be used if you want to customize the homepage&#39;s template.</span>
+
+    <span class="n">url</span><span class="p">(</span><span class="s">&quot;^$&quot;</span><span class="p">,</span> <span class="s">&quot;mezzanine.pages.views.page&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;slug&quot;</span><span class="p">:</span> <span class="s">&quot;/&quot;</span><span class="p">},</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;home&quot;</span><span class="p">),</span>
+
+    <span class="c"># HOMEPAGE FOR A BLOG-ONLY SITE</span>
+    <span class="c"># -----------------------------</span>
+    <span class="c"># This pattern points the homepage to the blog post listing page,</span>
+    <span class="c"># and is useful for sites that are primarily blogs. If you use this</span>
+    <span class="c"># pattern, you&#39;ll also need to set BLOG_SLUG = &quot;&quot; in your</span>
+    <span class="c"># ``settings.py`` module, and delete the blog page object from the</span>
+    <span class="c"># page tree in the admin if it was installed.</span>
+
+    <span class="c"># url(&quot;^$&quot;, &quot;mezzanine.blog.views.blog_post_list&quot;, name=&quot;home&quot;),</span>
+
+    <span class="c"># MEZZANINE&#39;S URLS</span>
+    <span class="c"># ----------------</span>
+    <span class="c"># ADD YOUR OWN URLPATTERNS *ABOVE* THE LINE BELOW.</span>
+    <span class="c"># ``mezzanine.urls`` INCLUDES A *CATCH ALL* PATTERN</span>
+    <span class="c"># FOR PAGES, SO URLPATTERNS ADDED BELOW ``mezzanine.urls``</span>
+    <span class="c"># WILL NEVER BE MATCHED!</span>
+
+    <span class="c"># If you&#39;d like more granular control over the patterns in</span>
+    <span class="c"># ``mezzanine.urls``, go right ahead and take the parts you want</span>
+    <span class="c"># from it, and use them directly below instead of using</span>
+    <span class="c"># ``mezzanine.urls``.</span>
+    <span class="p">(</span><span class="s">&quot;^&quot;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s">&quot;mezzanine.urls&quot;</span><span class="p">)),</span>
+
+    <span class="c"># MOUNTING MEZZANINE UNDER A PREFIX</span>
+    <span class="c"># ---------------------------------</span>
+    <span class="c"># You can also mount all of Mezzanine&#39;s urlpatterns under a</span>
+    <span class="c"># URL prefix if desired. When doing this, you need to define the</span>
+    <span class="c"># ``SITE_PREFIX`` setting, which will contain the prefix. Eg:</span>
+    <span class="c"># SITE_PREFIX = &quot;my/site/prefix&quot;</span>
+    <span class="c"># For convenience, and to avoid repeating the prefix, use the</span>
+    <span class="c"># commented out pattern below (commenting out the one above of course)</span>
+    <span class="c"># which will make use of the ``SITE_PREFIX`` setting. Make sure to</span>
+    <span class="c"># add the import ``from django.conf import settings`` to the top</span>
+    <span class="c"># of this file as well.</span>
+    <span class="c"># Note that for any of the various homepage patterns above, you&#39;ll</span>
+    <span class="c"># need to use the ``SITE_PREFIX`` setting as well.</span>
+
+    <span class="c"># (&quot;^%s/&quot; % settings.SITE_PREFIX, include(&quot;mezzanine.urls&quot;))</span>
+
+<span class="p">)</span>
+
+<span class="c"># Adds ``STATIC_URL`` to the context of error pages, so that error</span>
+<span class="c"># pages can use JS, CSS and images.</span>
+<span class="n">handler404</span> <span class="o">=</span> <span class="s">&quot;mezzanine.core.views.page_not_found&quot;</span>
+<span class="n">handler500</span> <span class="o">=</span> <span class="s">&quot;mezzanine.core.views.server_error&quot;</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">GreatLakesWetlands 0.5 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, CWM GLRI.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

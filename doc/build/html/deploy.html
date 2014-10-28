@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Deploying the system &mdash; GreatLakesWetlands 0.5 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="GreatLakesWetlands 0.5 documentation" href="index.html" />
+    <link rel="next" title="Documentation system" href="documentation.html" />
+    <link rel="prev" title="System overview" href="overview.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="documentation.html" title="Documentation system"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="System overview"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">GreatLakesWetlands 0.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="deploying-the-system">
+<h1>Deploying the system<a class="headerlink" href="#deploying-the-system" title="Permalink to this headline">¶</a></h1>
+<p>These instructions include sections only relevant to an installation on a virtual server  using the <a class="reference external" href="http://wiki.qemu.org/">QEMU</a> virtualizer.  Those sections are in boxes headed <cite>Virtual machine</cite>, they can be ignored if you&#8217;re installing on a regular non-virtual system running Ubuntu.  In the <cite>Virtual machine</cite> sections, commands are to be run on the host system.  Commands outside the <cite>Virtual machine</cite> boxes should be run on the regular non-virtual system or the virtual guest system, whichever you&#8217;re using.  Installation in a virtual machine is not necessarily recommended, in particular making an efficient network link from the internet to a virtual machine is not covered here.  The virtual machine deployment serves mostly to ensure that all required dependencies are documented.</p>
+<p>These instructions to not include the <tt class="docutils literal"><span class="pre">mezzanine-project</span> <span class="pre">myproject</span></tt> step required to initialize a the mezzanine CMS from scratch, they assume an existing database will be used.</p>
+<p>Create a directory to work in:</p>
+<div class="highlight-python"><div class="highlight"><pre>ROOTDIR=/mnt/usr1/scratch/glwdeploy
+mkdir -p $ROOTDIR
+cd $ROOTDIR
+</pre></div>
+</div>
+<div class="topic">
+<p class="topic-title first">Virtual machine</p>
+<p>Create a base image file, and boot with the Ubuntu 14.04 Server image:</p>
+<div class="highlight-python"><div class="highlight"><pre># name of base image file
+IMGFILE=glwdemo.qcow2
+
+qemu-img create -f qcow2 $IMGFILE 1024G
+
+# flags for qemu
+QFLAGS=&quot;-enable-kvm -m 4096 -smp 2 \
+    -redir tcp:5555::80 -redir tcp:5800::8000 -redir tcp:2222::22&quot;
+
+# location of the Ubuntu 14.04 server install image
+INST=/mnt/bkup/usr1proj/iso/ubuntu-14.04.1-server-amd64.iso
+
+qemu-system-x86_64 $QFLAGS -cdrom $INST -boot d $IMGFILE
+</pre></div>
+</div>
+<ul class="simple">
+<li>default everything except username / password</li>
+<li>disk setup: Guided - use entire disk (not bothering with LVM)</li>
+<li>answer Yes (not default No) to write changes to disk</li>
+<li>Install security updates automatically, or No automatic updates,
+as you prefer</li>
+<li>Software selection - check OpenSSH server</li>
+<li>reboots to install (language selection) again, just close the window</li>
+</ul>
+<p>Boot the system:</p>
+<div class="highlight-python"><div class="highlight"><pre># more flags now the display is not needed for the install step
+QFLAGS=&quot;$QFLAGS -display none -daemonize&quot;
+
+qemu-system-x86_64 $QFLAGS $IMGFILE
+ssh -p 2222 127.0.0.1
+</pre></div>
+</div>
+</div>
+<p>Log in and add <tt class="docutils literal"><span class="pre">GRUB_RECORDFAIL_TIMEOUT=10</span></tt> to <tt class="docutils literal"><span class="pre">/etc/default/grub</span></tt> to stop the
+server waiting for input on reboot after an improper shutdown.  Then run these commands:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo update-grub  # applies the timeout fix
+apt-get update
+apt-get upgrade
+</pre></div>
+</div>
+<div class="topic">
+<p class="topic-title first">Virtual machine</p>
+<p>Create a snapshot to preserve this clean install.
+Shut down the guest OS, then:</p>
+<div class="highlight-python"><div class="highlight"><pre># switch to a snapshot to preserve the clean base image
+BASEIMG=$IMGFILE
+IMGFILE=deploy_$BASEIMG
+qemu-img create -f qcow2 -b $BASEIMG $IMGFILE
+</pre></div>
+</div>
+<p><strong>Do NOT</strong> boot the system on <tt class="docutils literal"><span class="pre">$BASEIMG</span></tt> again, that will invalidate
+the <tt class="docutils literal"><span class="pre">$IMGFILE</span></tt> <a class="reference external" href="http://wiki.qemu.org/Documentation/CreateSnapshot">snapshot</a>.</p>
+<p>Boot the system on the snapshot and log in:</p>
+<div class="highlight-python"><div class="highlight"><pre>qemu-system-x86_64 $QFLAGS $IMGFILE
+ssh -p 2222 127.0.0.1
+</pre></div>
+</div>
+</div>
+<p>Install needed components:</p>
+<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install python-virtualenv git screen unzip apache2
+
+# to get PIL (pillow) installation to work, thanks to
+# http://prateekvjoshi.com/2014/04/19/how-to-install-pil-on-ubuntu/
+sudo apt-get install python-dev libjpeg-dev libfreetype6-dev zlib1g-dev
+</pre></div>
+</div>
+<div class="topic">
+<p class="topic-title first">Virtual machine</p>
+<p>The above causes a lot of installation, so make another level of snapshot for the
+more fiddly parts to follow.  Shut down the guest OS, then:</p>
+<div class="highlight-python"><div class="highlight"><pre>BASEIMG=$IMGFILE
+IMGFILE=deploy2_$BASEIMG
+qemu-img create -f qcow2 -b $BASEIMG $IMGFILE
+
+qemu-system-x86_64 $QFLAGS $IMGFILE
+ssh -p 2222 127.0.0.1
+</pre></div>
+</div>
+</div>
+<p>Now deploy the Django Mezzanine project:</p>
+<div class="highlight-python"><div class="highlight"><pre>mkdir glw
+cd glw
+virtualenv venv
+. venv/bin/activate
+pip install mezzanine
+
+git clone...
+
+cd dserver/cwmenduser/
+</pre></div>
+</div>
+<p>At this point you need to create <tt class="docutils literal"><span class="pre">local_settings.py</span></tt>, a file not included in the
+<tt class="docutils literal"><span class="pre">git</span></tt> repository, because it&#8217;s supposed to contain local settings <em>including passwords and other sensitive information</em>.  You can generate values for the <tt class="docutils literal"><span class="pre">SECRET_KEY</span></tt> and <tt class="docutils literal"><span class="pre">NEVERCACHE_KEY</span></tt> variables with this command:</p>
+<div class="highlight-python"><div class="highlight"><pre>python -c &#39;import uuid; print(&quot;&quot;.join(str(uuid.uuid4()) for i in range(3)))&#39;
+</pre></div>
+</div>
+<p>Copy <tt class="docutils literal"><span class="pre">local_settings.py.template</span></tt> to <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> and
+modify it appropriately, replacing the parts in &lt;angle brackets&gt;.</p>
+<p>Finally, copy in glcw.db, supplied separately.  Then:</p>
+<div class="highlight-python"><div class="highlight"><pre>python manage.py runserver 0.0.0.0:8000
+</pre></div>
+</div>
+<p>At this point the website should be visible at <a class="reference external" href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>
+if using a regular non-virtual machine, and at <a class="reference external" href="http://127.0.0.1:5800">http://127.0.0.1:5800</a> on the <em>host</em>
+OS if using a virtual machine.</p>
+<p>The original deployment of the site used <a class="reference external" href="http://httpd.apache.org/">Apache</a>
+and WSGI, see <a class="reference external" href="http://django.readthedocs.org/en/1.6.x/howto/deployment/wsgi/modwsgi.html#daemon-mode" title="(in Django v1.6)"><em>Using mod_wsgi daemon mode</em></a>.</p>
+<div class="section" id="apache-for-deploying-the-public-website">
+<h2>Apache for deploying the public website<a class="headerlink" href="#apache-for-deploying-the-public-website" title="Permalink to this headline">¶</a></h2>
+<p>This assumes a regular non-virtual machine connected to the internet,</p>
+<p>Here&#8217;s the Apache site definition needed to deploy the site:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;VirtualHost *:80&gt;
+
+ServerName www.greatlakeswetlands.org
+ServerAlias greatlakeswetlands.org *.greatlakeswetlands.org
+
+Alias /media/ /mnt/usr1/beav/site/esriapp/dserver/cwmenduser/media/
+Alias /static/ /mnt/usr1/beav/site/esriapp/dserver/cwmenduser/static/
+
+WSGIDaemonProcess pydaemon-glw_namebased processes=1 threads=5 python-path=/mnt/usr1/beav$
+
+WSGIScriptAlias / /mnt/usr1/beav/site/esriapp/dserver/cwmenduser/wsgi.py
+
+&lt;Location /&gt;
+WSGIProcessGroup pydaemon-glw_namebased
+&lt;/Location&gt;
+
+&lt;/VirtualHost&gt;
+</pre></div>
+</div>
+<p>This goes in <tt class="docutils literal"><span class="pre">/etc/apache2/sites-available</span></tt>, e.g.
+<tt class="docutils literal"><span class="pre">/etc/apache2/sites-available/glw</span></tt>, and is the sym-linked from
+<tt class="docutils literal"><span class="pre">/etc/apache2/sites-enabled</span></tt>, e.g.
+<tt class="docutils literal"><span class="pre">/etc/apache2/sites-available/020-glw</span></tt>. The <tt class="docutils literal"><span class="pre">020-</span></tt> just serves to
+control the ordering of sites in the <cite>enabled</cite> directory.</p>
+<p><tt class="docutils literal"><span class="pre">/mnt/usr1/beav/site/esriapp</span></tt> should be replaced with the path to
+the directory when the <tt class="docutils literal"><span class="pre">git</span></tt> repository is cloned.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Deploying the system</a><ul>
+<li><a class="reference internal" href="#apache-for-deploying-the-public-website">Apache for deploying the public website</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="overview.html"
+                        title="previous chapter">System overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="documentation.html"
+                        title="next chapter">Documentation system</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/deploy.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="documentation.html" title="Documentation system"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="System overview"
+             >previous</a> |</li>
+        <li><a href="index.html">GreatLakesWetlands 0.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, CWM GLRI.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

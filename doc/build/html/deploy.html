@@ -165,7 +165,8 @@ cd dserver/cwmenduser/
 <p>Copy <tt class="docutils literal"><span class="pre">local_settings.py.template</span></tt> to <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> and
 modify it appropriately, replacing the parts in &lt;angle brackets&gt;.</p>
 <p>Finally, copy in glcw.db, supplied separately.  Then:</p>
-<div class="highlight-python"><div class="highlight"><pre>python manage.py runserver 0.0.0.0:8000
+<div class="highlight-python"><div class="highlight"><pre>python manage.py collectstatic
+python manage.py runserver 0.0.0.0:8000
 </pre></div>
 </div>
 <p>At this point the website should be visible at <a class="reference external" href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>
@@ -268,7 +269,7 @@ the directory when the <tt class="docutils literal"><span class="pre">git</span>
     </div>
     <div class="footer">
         &copy; Copyright 2014, CWM GLRI.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

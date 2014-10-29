@@ -52,6 +52,81 @@
   <div class="section" id="coffeescript-code">
 <h1>CoffeeScript code<a class="headerlink" href="#coffeescript-code" title="Permalink to this headline">¶</a></h1>
 </div>
+<div class="section" id="glrimon-coffee">
+<h1>glrimon.coffee<a class="headerlink" href="#glrimon-coffee" title="Permalink to this headline">¶</a></h1>
+<p>useful to automatically convert <tt class="docutils literal"><span class="pre">glrimon.coffee</span></tt> to <tt class="docutils literal"><span class="pre">glrimon.js</span></tt>
+everytime <tt class="docutils literal"><span class="pre">glrimon.coffee</span></tt> is changed:</p>
+<div class="highlight-python"><div class="highlight"><pre>/usr/bin/coffee -cw glrimon.coffee &amp;
+</pre></div>
+</div>
+<div class="section" id="global-variables">
+<h2>Global variables<a class="headerlink" href="#global-variables" title="Permalink to this headline">¶</a></h2>
+<dl class="data">
+<dt id="map">
+<tt class="descname">map</tt><a class="headerlink" href="#map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>A global map object</p>
+<dl class="data">
+<dt id="window.selected_sites, window.highlighted_sites, window.theme_name">
+<tt class="descclassname">window.selected_sites, window.highlighted_sites, window.</tt><tt class="descname">theme_name</tt><a class="headerlink" href="#window.selected_sites, window.highlighted_sites, window.theme_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>some page level data bound to the window object</p>
+<dl class="data">
+<dt id="protocol">
+<tt class="descname">protocol</tt><a class="headerlink" href="#protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>For conveniently switching between <cite>&#8220;http&#8221;</cite> and <cite>&#8220;https&#8221;</cite></p>
+</div>
+<div class="section" id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="main">
+<tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Not really a function called main, just the main Dojo <tt class="docutils literal"><span class="pre">require()</span></tt> call
+which wraps everything else.</p>
+<dl class="function">
+<dt id="querySites">
+<tt class="descname">querySites</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#querySites" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>query server for sites near mouseclick</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">param event:</th><td class="field-body">the triggering mouse click event</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="set_legend">
+<tt class="descname">set_legend</tt><big>(</big><em>which</em><big>)</big><a class="headerlink" href="#set_legend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">param string which:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">which legend, key for <a class="reference internal" href="#renderers" title="renderers"><tt class="xref js js-data docutils literal"><span class="pre">renderers</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+<p>Forces update of map to show new legend</p>
+<dl class="data">
+<dt id="renderers">
+<tt class="descname">renderers</tt><a class="headerlink" href="#renderers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>A mapping to site point renderers by name, &#8220;global&#8221; data within
+the <tt class="docutils literal"><span class="pre">require()</span></tt> call.</p>
+</div>
+</div>
 
 
           </div>
@@ -59,6 +134,16 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CoffeeScript code</a></li>
+<li><a class="reference internal" href="#glrimon-coffee">glrimon.coffee</a><ul>
+<li><a class="reference internal" href="#global-variables">Global variables</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="automodules.html"
                         title="previous chapter">Python modules</a></p>
@@ -101,7 +186,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2014, CWM GLRI.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

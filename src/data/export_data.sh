@@ -1,5 +1,5 @@
 # where to stage files - DELETED on update
-OUT_DIR=/home/tbrown/n/proj/GLRI/mon/data/cwm_export
+OUT_DIR=/home/tbrown/n/proj/GLRI/mon/data/cwm_export_20141028
 
 # connection spec.
 HOST=127.0.0.1
@@ -7,7 +7,8 @@ PORT=15432
 HOST=beaver.nrri.umn.edu
 PORT=5432
 DBNAME=nrgisl01
-PASSWORD="$(cat ~/.nrpwd)"
+read -s -p "Password:" PASSWORD
+export PASSWORD
 CONSPEC="PG:host=$HOST port=$PORT dbname=$DBNAME password=$PASSWORD"
 
 rm -rf "$OUT_DIR"

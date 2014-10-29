@@ -120,6 +120,7 @@ modify it appropriately, replacing the parts in <angle brackets>.
     
 Finally, copy in glcw.db, supplied separately.  Then::
     
+    python manage.py collectstatic
     python manage.py runserver 0.0.0.0:8000
     
 At this point the website should be visible at http://127.0.0.1:8000

@@ -252,6 +252,7 @@ INSTALLED_APPS = (
     #"mezzanine.mobile",
     
     "cwmenduser.dlayer",
+    "cwmws",
 )
 
 # List of processors used by RequestContext to populate the context.

@@ -4,6 +4,7 @@ import os
 
 # TNB
 import sys
+sys.path.append(os.path.dirname(__file__))
 from local_settings import WSGI_PATH
 sys.path[:0] = WSGI_PATH
 
